@@ -84,6 +84,7 @@ export default async function PostPage({ params }) {
       {/* Featured Image */}
       {post.featured_image_url && (
         <div className="w-full max-h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={post.featured_image_url} alt={post.title} className="w-full h-full object-cover" />
         </div>
       )}
@@ -120,7 +121,7 @@ export default async function PostPage({ params }) {
 
             {/* Author */}
             <div className="flex items-center gap-3 mb-8 pb-8 border-b border-gray-200 dark:border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
                 {(post.author_display_name || 'A')[0].toUpperCase()}
               </div>
               <div>

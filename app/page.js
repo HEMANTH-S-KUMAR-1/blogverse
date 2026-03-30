@@ -30,7 +30,7 @@ export default async function HomePage() {
     <div>
       {/* Hero Section */}
       {featured && (
-        <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/30">
+        <section className="relative overflow-hidden bg-linear-to-br from-gray-50 to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
             <Link href={`/post/${featured.slug}`} className="group block">
               <div className="grid lg:grid-cols-2 gap-8 items-center">
@@ -56,6 +56,7 @@ export default async function HomePage() {
                 </div>
                 {featured.featured_image_url && (
                   <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-gray-300/50 dark:shadow-gray-900/50">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={featured.featured_image_url} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   </div>
                 )}

@@ -52,7 +52,7 @@ export default function AdvertisePage() {
               </span>
             )}
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{pkg.name}</h3>
-            <p className={`text-3xl font-bold bg-gradient-to-r ${pkg.color} bg-clip-text text-transparent mt-2`}>{pkg.price}</p>
+            <p className={`text-3xl font-bold bg-linear-to-r ${pkg.color} bg-clip-text text-transparent mt-2`}>{pkg.price}</p>
             <ul className="mt-4 space-y-3">
               {pkg.features.map((f, j) => (
                 <li key={j} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">

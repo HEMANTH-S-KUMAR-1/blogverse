@@ -12,9 +12,9 @@ export default function TipButton({ authorName, upiId, kofiLink }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 p-6">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold">
           {(authorName || 'A')[0].toUpperCase()}
         </div>
         <div>

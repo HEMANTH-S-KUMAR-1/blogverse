@@ -42,7 +42,7 @@ export default async function CategoryPage({ params }) {
   return (
     <div>
       {/* Category Header */}
-      <section className={`bg-gradient-to-r ${categoryBgClasses[name]} py-16`}>
+      <section className={`bg-linear-to-r ${categoryBgClasses[name]} py-16`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-5xl mb-4 block">{cat.emoji}</span>
           <h1 className="text-4xl font-bold text-white mb-2">{cat.label}</h1>

@@ -17,10 +17,11 @@ export default function ProductCard({ product }) {
       {/* Thumbnail */}
       {product.thumbnail_url ? (
         <div className="aspect-video bg-gray-100 dark:bg-gray-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={product.thumbnail_url} alt={product.title} className="w-full h-full object-cover" loading="lazy" />
         </div>
       ) : (
-        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+        <div className="aspect-video bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
           <span className="text-5xl">{categoryEmoji[product.category] || '📦'}</span>
         </div>
       )}
@@ -41,7 +42,7 @@ export default function ProductCard({ product }) {
             href={product.gumroad_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-sm font-medium transition-all"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-linear-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-sm font-medium transition-all"
           >
             Buy Now
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>

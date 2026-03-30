@@ -36,7 +36,7 @@ function CommentItem({ comment, onReply, replies }) {
   return (
     <div className="group">
       <div className="flex gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+        <div className="w-8 h-8 rounded-full bg-linear-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
           {comment.display_name[0].toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
@@ -101,10 +101,6 @@ export default function CommentSection({ postId }) {
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    fetchComments()
-  }, [postId])
-
   const fetchComments = async () => {
     const { data } = await supabase
       .from('comments')
@@ -114,6 +110,11 @@ export default function CommentSection({ postId }) {
 
     if (data) setComments(data)
   }
+
+  useEffect(() => {
+    fetchComments()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

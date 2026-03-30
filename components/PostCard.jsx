@@ -20,6 +20,7 @@ export default function PostCard({ post }) {
         {/* Featured Image */}
         {post.featured_image_url && (
           <div className="aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.featured_image_url}
               alt={post.title}
@@ -29,7 +30,7 @@ export default function PostCard({ post }) {
           </div>
         )}
         {!post.featured_image_url && (
-          <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+          <div className="aspect-video bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
             <span className="text-4xl">{cat.emoji}</span>
           </div>
         )}
@@ -55,7 +56,7 @@ export default function PostCard({ post }) {
           {/* Meta */}
           <div className="mt-4 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
+              <div className="w-6 h-6 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
                 {(post.author_display_name || 'A')[0].toUpperCase()}
               </div>
               <span>{post.author_display_name || 'Anonymous'}</span>

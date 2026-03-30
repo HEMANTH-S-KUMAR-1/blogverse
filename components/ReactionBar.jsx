@@ -16,10 +16,6 @@ export default function ReactionBar({ postId }) {
   const [userReaction, setUserReaction] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchReactions()
-  }, [postId])
-
   const fetchReactions = async () => {
     const { data } = await supabase
       .from('reactions')
@@ -38,6 +34,11 @@ export default function ReactionBar({ postId }) {
       if (userR) setUserReaction(userR.reaction_type)
     }
   }
+
+  useEffect(() => {
+    fetchReactions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId])
 
   const handleReaction = async (type) => {
     if (loading || userReaction) return

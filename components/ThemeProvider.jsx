@@ -18,6 +18,7 @@ export function ThemeProvider({ children, attribute = 'class', defaultTheme = 's
   useEffect(() => {
     const stored = localStorage.getItem('theme')
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThemeState(stored)
     }
     setMounted(true)
@@ -30,6 +31,7 @@ export function ThemeProvider({ children, attribute = 'class', defaultTheme = 's
     if (theme === 'system' && enableSystem) {
       resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResolvedTheme(resolved)
 
     const root = document.documentElement

@@ -214,6 +214,7 @@ export default function WritePage() {
           />
           {featuredImage && (
             <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={featuredImage} alt="Preview" className="w-full h-full object-cover" />
             </div>
           )}
@@ -233,7 +234,7 @@ export default function WritePage() {
           <button
             type="submit"
             disabled={submitting}
-            className="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 disabled:opacity-50 transition-all"
+            className="px-8 py-3 rounded-xl bg-linear-to-r from-emerald-500 to-teal-600 text-white font-medium hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 disabled:opacity-50 transition-all"
             id="publish-post-btn"
           >
             {submitting ? 'Publishing...' : '🚀 Publish Post'}
