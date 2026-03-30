@@ -4,7 +4,7 @@ export const runtime = 'edge'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, CATEGORY_CONFIG } from '@/lib/supabase'
+import { supabase, CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
 import Editor from '@/components/Editor'
 import toast from 'react-hot-toast'
 
@@ -18,6 +18,7 @@ export default function EditPage({ params }) {
   const [category, setCategory] = useState('')
   const [tags, setTags] = useState('')
   const [featuredImage, setFeaturedImage] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [slug, setSlug] = useState('')
@@ -49,6 +50,7 @@ export default function EditPage({ params }) {
       setCategory(data.category)
       setTags((data.tags || []).join(', '))
       setFeaturedImage(data.featured_image_url || '')
+      setAvatarUrl(data.author_avatar_url || '')
       setVerified(true)
       toast.success('Access granted!')
     }
@@ -69,6 +71,7 @@ export default function EditPage({ params }) {
       content,
       excerpt,
       featured_image_url: featuredImage || null,
+      author_avatar_url: post.identity_mode !== 'anonymous' ? (avatarUrl || null) : null,
       category,
       tags: tagsArray,
     }).eq('id', post.id)
@@ -151,6 +154,25 @@ export default function EditPage({ params }) {
           placeholder="Featured image URL"
           className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
         />
+        {post.identity_mode !== 'anonymous' && (
+          <div className="space-y-2">
+            <input
+              type="url"
+              value={avatarUrl}
+              onChange={e => setAvatarUrl(e.target.value)}
+              placeholder="Avatar image URL (optional)"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+              id="avatar-url-edit-input"
+            />
+            {safeImageUrl(avatarUrl) && (
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={safeImageUrl(avatarUrl)} alt="Avatar preview" className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                <span className="text-xs text-gray-400">Avatar preview</span>
+              </div>
+            )}
+          </div>
+        )}
         <Editor content={content} onUpdate={setContent} />
         <div className="flex justify-end">
           <button
