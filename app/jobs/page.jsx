@@ -47,7 +47,7 @@ export default async function JobsPage() {
       )}
 
       {/* Post a Job Section */}
-      <section id="post-a-job" className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 p-8 text-center">
+      <section id="post-a-job" className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10  p-8 text-center">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Post a Job Listing</h2>
         <p className="text-gray-500 dark:text-gray-400 mb-6">Reach our growing community of writers and creators</p>
 

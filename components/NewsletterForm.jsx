@@ -35,7 +35,7 @@ export default function NewsletterForm() {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 p-5">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10  p-5">
       <h3 className="text-sm font-semibold text-gray-900 dark:text-white">📬 Stay Updated</h3>
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Get the best posts delivered to your inbox weekly.</p>
       <form onSubmit={handleSubmit} className="mt-3 flex gap-2">
