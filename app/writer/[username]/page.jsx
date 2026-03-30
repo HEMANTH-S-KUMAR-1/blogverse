@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, safeImageUrl } from '@/lib/supabase'
 import PostCard from '@/components/PostCard'
 import TipButton from '@/components/TipButton'
 
@@ -30,6 +30,7 @@ export default async function WriterPage({ params }) {
   const totalViews = posts?.reduce((sum, p) => sum + (p.views || 0), 0) || 0
   const latestPost = posts?.[0]
   const bio = latestPost?.author_bio
+  const avatarUrl = latestPost?.author_avatar_url || null
   const upiId = latestPost?.author_upi_id
   const kofiLink = latestPost?.author_kofi_link
 
@@ -39,9 +40,14 @@ export default async function WriterPage({ params }) {
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-linear-to-br from-gray-50 to-emerald-50/30 dark:from-gray-900 dark:to-emerald-950/20  p-8 mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-linear-to-br from-emerald-400 to-teal-500  flex items-center justify-center text-white text-2xl font-bold">
-              {decodedName[0].toUpperCase()}
-            </div>
+            {safeImageUrl(avatarUrl) ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={safeImageUrl(avatarUrl)} alt={decodedName} className="w-16 h-16 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-emerald-400 to-teal-500  flex items-center justify-center text-white text-2xl font-bold">
+                {decodedName[0].toUpperCase()}
+              </div>
+            )}
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{decodedName}</h1>
               {bio && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{bio}</p>}
