@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CATEGORY_CONFIG } from '@/lib/supabase'
+import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
 
 export default function PostCard({ post }) {
   const cat = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.tech
@@ -56,9 +56,14 @@ export default function PostCard({ post }) {
           {/* Meta */}
           <div className="mt-4 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
-                {(post.author_display_name || 'A')[0].toUpperCase()}
-              </div>
+              {safeImageUrl(post.author_avatar_url) ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={safeImageUrl(post.author_avatar_url)} alt={post.author_display_name || 'Author'} className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
+                  {(post.author_display_name || 'A')[0].toUpperCase()}
+                </div>
+              )}
               <span>{post.author_display_name || 'Anonymous'}</span>
             </div>
             <div className="flex items-center gap-3">

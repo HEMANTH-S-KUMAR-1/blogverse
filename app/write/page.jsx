@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, CATEGORY_CONFIG } from '@/lib/supabase'
+import { supabase, CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
 import Editor from '@/components/Editor'
 import EditKeyModal from '@/components/EditKeyModal'
 import toast from 'react-hot-toast'
@@ -19,6 +19,7 @@ export default function WritePage() {
   const [featuredImage, setFeaturedImage] = useState('')
   const [upiId, setUpiId] = useState('')
   const [kofiLink, setKofiLink] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [editKey, setEditKey] = useState(null)
@@ -52,6 +53,7 @@ export default function WritePage() {
       author_upi_id: upiId || null,
       author_kofi_link: kofiLink || null,
       identity_mode: identityMode,
+      author_avatar_url: identityMode !== 'anonymous' ? (avatarUrl || null) : null,
       category,
       tags: tagsArray,
       status: 'published',
@@ -133,6 +135,21 @@ export default function WritePage() {
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
                 id="display-name-input"
               />
+              <input
+                type="url"
+                value={avatarUrl}
+                onChange={e => setAvatarUrl(e.target.value)}
+                placeholder="Avatar image URL (optional)"
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
+                id="avatar-url-input"
+              />
+              {safeImageUrl(avatarUrl) && (
+                <div className="flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={safeImageUrl(avatarUrl)} alt="Avatar preview" className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                  <span className="text-xs text-gray-400">Avatar preview</span>
+                </div>
+              )}
               {identityMode === 'public' && (
                 <textarea
                   value={bio}

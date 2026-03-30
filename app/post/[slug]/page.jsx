@@ -1,4 +1,4 @@
-import { supabase, CATEGORY_CONFIG } from '@/lib/supabase'
+import { supabase, CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ReactionBar from '@/components/ReactionBar'
@@ -122,9 +122,14 @@ export default async function PostPage({ params }) {
 
             {/* Author */}
             <div className="flex items-center gap-3 mb-8 pb-8 border-b border-gray-200 dark:border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
-                {(post.author_display_name || 'A')[0].toUpperCase()}
-              </div>
+              {safeImageUrl(post.author_avatar_url) ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={safeImageUrl(post.author_avatar_url)} alt={post.author_display_name || 'Author'} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                  {(post.author_display_name || 'A')[0].toUpperCase()}
+                </div>
+              )}
               <div>
                 {post.identity_mode !== 'anonymous' ? (
                   <Link href={`/writer/${encodeURIComponent(post.author_display_name)}`} className="text-sm font-medium text-gray-900 dark:text-white hover:text-emerald-500">
