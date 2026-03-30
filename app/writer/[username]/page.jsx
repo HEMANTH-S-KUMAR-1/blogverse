@@ -25,6 +25,7 @@ export default async function WriterPage({ params }) {
     .in('identity_mode', ['pseudonym', 'public'])
     .eq('status', 'published')
     .order('published_at', { ascending: false })
+    .limit(24)
 
   const totalViews = posts?.reduce((sum, p) => sum + (p.views || 0), 0) || 0
   const latestPost = posts?.[0]

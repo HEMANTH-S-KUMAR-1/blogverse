@@ -17,21 +17,31 @@ export default function ReactionBar({ postId }) {
   const [loading, setLoading] = useState(false)
 
   const fetchReactions = async () => {
-    const { data } = await supabase
-      .from('reactions')
-      .select('reaction_type, session_id')
-      .eq('post_id', postId)
+    const sessionId = getSessionId()
+    // Run both queries in parallel: aggregate counts and the user's own reaction
+    const [{ data: allReactions }, { data: userReactions }] = await Promise.all([
+      supabase
+        .from('reactions')
+        .select('reaction_type')
+        .eq('post_id', postId),
+      supabase
+        .from('reactions')
+        .select('reaction_type')
+        .eq('post_id', postId)
+        .eq('session_id', sessionId)
+        .limit(1),
+    ])
 
-    if (data) {
+    if (allReactions) {
       const grouped = {}
-      data.forEach(r => {
+      allReactions.forEach(r => {
         grouped[r.reaction_type] = (grouped[r.reaction_type] || 0) + 1
       })
       setCounts(grouped)
+    }
 
-      const sessionId = getSessionId()
-      const userR = data.find(r => r.session_id === sessionId)
-      if (userR) setUserReaction(userR.reaction_type)
+    if (userReactions && userReactions.length > 0) {
+      setUserReaction(userReactions[0].reaction_type)
     }
   }
 
