@@ -40,6 +40,7 @@ export default function Editor({ content, onUpdate }) {
       }),
     ],
     content: content || '',
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       if (onUpdate) onUpdate(editor.getHTML())
     },
