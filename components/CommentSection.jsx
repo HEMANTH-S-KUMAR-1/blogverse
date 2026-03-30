@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
@@ -107,6 +107,7 @@ export default function CommentSection({ postId }) {
       .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true })
+      .limit(100)
 
     if (data) setComments(data)
   }
@@ -153,8 +154,21 @@ export default function CommentSection({ postId }) {
     }
   }
 
-  const topLevel = comments.filter(c => !c.parent_id)
-  const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId)
+  // Build the comment tree once per comments update instead of filtering on every render
+  const { topLevel, repliesMap } = useMemo(() => {
+    const top = []
+    const map = {}
+    for (const c of comments) {
+      if (!c.parent_id) {
+        top.push(c)
+      } else {
+        if (!map[c.parent_id]) map[c.parent_id] = []
+        map[c.parent_id].push(c)
+      }
+    }
+    return { topLevel: top, repliesMap: map }
+  }, [comments])
+  const getReplies = (parentId) => repliesMap[parentId] || []
 
   return (
     <div>

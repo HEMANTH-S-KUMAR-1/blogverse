@@ -30,6 +30,7 @@ export default async function CategoryPage({ params }) {
     .eq('category', name)
     .eq('status', 'published')
     .order('published_at', { ascending: false })
+    .limit(24)
 
   const categoryBgClasses = {
     health: 'from-emerald-500 to-emerald-700',
