@@ -9,19 +9,20 @@ import CategoryFilter from '@/components/CategoryFilter'
 export const revalidate = 60
 
 export default async function HomePage() {
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(12)
-
-  const { data: featuredPosts } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('status', 'published')
-    .order('views', { ascending: false })
-    .limit(1)
+  const [{ data: posts }, { data: featuredPosts }] = await Promise.all([
+    supabase
+      .from('posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(12),
+    supabase
+      .from('posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('views', { ascending: false })
+      .limit(1),
+  ])
 
   const featured = featuredPosts?.[0]
   const allPosts = posts || []
