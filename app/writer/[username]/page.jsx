@@ -3,6 +3,7 @@ import PostCard from '@/components/PostCard'
 import TipButton from '@/components/TipButton'
 
 export const revalidate = 60
+export const runtime = 'edge'
 
 export async function generateMetadata({ params }) {
   const { username } = await params

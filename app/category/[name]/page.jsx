@@ -5,6 +5,7 @@ import NewsletterForm from '@/components/NewsletterForm'
 import AffiliateBanner from '@/components/AffiliateBanner'
 
 export const revalidate = 60
+export const runtime = 'edge'
 
 export async function generateMetadata({ params }) {
   const { name } = await params
