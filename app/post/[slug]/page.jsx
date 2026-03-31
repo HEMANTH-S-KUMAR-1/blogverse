@@ -12,7 +12,7 @@ import PostCard from '@/components/PostCard'
 import ViewIncrementer from '@/components/ViewIncrementer'
 
 export const revalidate = 60
-export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params

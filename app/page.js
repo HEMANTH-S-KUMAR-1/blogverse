@@ -8,6 +8,7 @@ import Link from 'next/link'
 import CategoryFilter from '@/components/CategoryFilter'
 
 export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const db = await getDB()

@@ -17,7 +17,7 @@ database_id = "5a62553c-e713-4047-9dd9-4764866754be"
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
-bucket_name = "blogverse_assets"
+bucket_name = "blogverse-assets"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"

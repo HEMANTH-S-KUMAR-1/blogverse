@@ -1,0 +1,59 @@
+{
+  "app": {
+    "[project]/app/_not-found/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/admin/add-job/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/advertise/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/category/[name]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/courses/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/edit/[slug]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/jobs/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/post/[slug]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/products/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/support/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/write/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ],
+    "[project]/app/writer/[username]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "static/media/8c2eb9ceedecfc8e-s.p.0oeo8epbafgia.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

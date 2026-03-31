@@ -1,0 +1,19 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/add-job/page": "/admin/add-job",
+  "/advertise/page": "/advertise",
+  "/api/assets/[filename]/route": "/api/assets/[filename]",
+  "/api/upload/route": "/api/upload",
+  "/category/[name]/page": "/category/[name]",
+  "/courses/page": "/courses",
+  "/edit/[slug]/page": "/edit/[slug]",
+  "/favicon.ico/route": "/favicon.ico",
+  "/jobs/page": "/jobs",
+  "/page": "/",
+  "/post/[slug]/page": "/post/[slug]",
+  "/products/page": "/products",
+  "/support/page": "/support",
+  "/write/page": "/write",
+  "/writer/[username]/page": "/writer/[username]"
+}

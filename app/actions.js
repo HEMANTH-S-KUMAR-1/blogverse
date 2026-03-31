@@ -1,12 +1,12 @@
 'use server'
 
-import { getRequestContext } from '@opennextjs/cloudflare'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { getDB } from '@/lib/d1'
 import { revalidatePath } from 'next/cache'
 
 async function verifyTurnstile(token) {
   if (!token) return false
-  const ctx = await getRequestContext()
+  const ctx = await getCloudflareContext()
   const secret = ctx?.env?.TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY
   if (!secret) return true // bypass if not configured during development
 
