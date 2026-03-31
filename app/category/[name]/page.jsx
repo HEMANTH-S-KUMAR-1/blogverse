@@ -1,4 +1,4 @@
-import { supabase, CATEGORY_CONFIG, CATEGORIES } from '@/lib/supabase'
+import { CATEGORY_CONFIG, CATEGORIES, getDB } from '@/lib/d1'
 import { notFound, redirect } from 'next/navigation'
 import PostCard from '@/components/PostCard'
 import NewsletterForm from '@/components/NewsletterForm'
@@ -24,13 +24,8 @@ export default async function CategoryPage({ params }) {
 
   const cat = CATEGORY_CONFIG[name]
 
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('category', name)
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(24)
+  const db = await getDB()
+  const { results: posts } = await db.prepare("SELECT * FROM posts WHERE category = ? AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(name).all()
 
   const categoryBgClasses = {
     health: 'from-emerald-500 to-emerald-700',

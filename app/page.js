@@ -1,4 +1,5 @@
-import { supabase, CATEGORY_CONFIG } from '@/lib/supabase'
+import { CATEGORY_CONFIG } from '@/lib/d1'
+import { getDB } from '@/lib/d1'
 import PostCard from '@/components/PostCard'
 import NewsletterForm from '@/components/NewsletterForm'
 import AffiliateBanner from '@/components/AffiliateBanner'
@@ -9,23 +10,15 @@ import CategoryFilter from '@/components/CategoryFilter'
 export const revalidate = 60
 
 export default async function HomePage() {
-  const [{ data: posts }, { data: featuredPosts }] = await Promise.all([
-    supabase
-      .from('posts')
-      .select('*')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(12),
-    supabase
-      .from('posts')
-      .select('*')
-      .eq('status', 'published')
-      .order('views', { ascending: false })
-      .limit(1),
+  const db = await getDB()
+  
+  const [postsResult, featuredResult] = await Promise.all([
+    db.prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT 12").all(),
+    db.prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT 1").all()
   ])
 
-  const featured = featuredPosts?.[0]
-  const allPosts = posts || []
+  const featured = featuredResult.results?.[0]
+  const allPosts = postsResult.results || []
 
   return (
     <div>

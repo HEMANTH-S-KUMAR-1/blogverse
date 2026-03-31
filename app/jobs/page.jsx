@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getDB } from '@/lib/d1'
 import JobCard from '@/components/JobCard'
 import Link from 'next/link'
 
@@ -10,11 +10,8 @@ export const metadata = {
 export const revalidate = 60
 
 export default async function JobsPage() {
-  const { data: jobs } = await supabase
-    .from('job_listings')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
+  const db = await getDB()
+  const { results: jobs } = await db.prepare("SELECT * FROM job_listings WHERE is_active = TRUE ORDER BY created_at DESC").all()
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

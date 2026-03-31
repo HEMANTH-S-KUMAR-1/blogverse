@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const MenuButton = ({ onClick, active, children, title }) => (
   <button
@@ -59,9 +59,40 @@ export default function Editor({ content, onUpdate }) {
 
   if (!editor) return null
 
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      
+      if (res.ok && data.url) {
+        editor.chain().focus().setImage({ src: data.url }).run()
+      } else {
+        alert('Upload failed: ' + (data.error || 'Unknown error'))
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    } finally {
+      setUploading(false)
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const addImage = () => {
-    const url = prompt('Enter image URL:')
-    if (url) editor.chain().focus().setImage({ src: url }).run()
+    fileInputRef.current?.click()
   }
 
   const addLink = () => {
@@ -100,8 +131,15 @@ export default function Editor({ content, onUpdate }) {
         <MenuButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
           ─
         </MenuButton>
-        <MenuButton onClick={addImage} title="Insert Image">
-          🖼
+        <input 
+          type="file" 
+          accept="image/*" 
+          className="hidden" 
+          ref={fileInputRef}
+          onChange={handleUpload}
+        />
+        <MenuButton onClick={addImage} title="Upload Image" active={uploading}>
+          {uploading ? '⏳' : '🖼'}
         </MenuButton>
         <MenuButton onClick={addLink} active={editor.isActive('link')} title="Insert Link">
           🔗

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getDB } from '@/lib/d1'
 
 export const metadata = {
   title: 'Learn & Grow — BlogVerse',
@@ -8,11 +8,8 @@ export const metadata = {
 export const revalidate = 60
 
 export default async function CoursesPage() {
-  const { data: webinars } = await supabase
-    .from('webinars')
-    .select('*')
-    .eq('is_active', true)
-    .order('event_date', { ascending: true })
+  const db = await getDB()
+  const { results: webinars } = await db.prepare("SELECT * FROM webinars WHERE is_active = TRUE ORDER BY event_date ASC").all()
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

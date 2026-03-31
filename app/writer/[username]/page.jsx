@@ -1,4 +1,4 @@
-import { supabase, safeImageUrl } from '@/lib/supabase'
+import { safeImageUrl, getDB } from '@/lib/d1'
 import PostCard from '@/components/PostCard'
 import TipButton from '@/components/TipButton'
 
@@ -18,14 +18,8 @@ export default async function WriterPage({ params }) {
   const { username } = await params
   const decodedName = decodeURIComponent(username)
 
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('author_display_name', decodedName)
-    .in('identity_mode', ['pseudonym', 'public'])
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(24)
+  const db = await getDB()
+  const { results: posts } = await db.prepare("SELECT * FROM posts WHERE author_display_name = ? AND identity_mode IN ('pseudonym', 'public') AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(decodedName).all()
 
   const totalViews = posts?.reduce((sum, p) => sum + (p.views || 0), 0) || 0
   const latestPost = posts?.[0]

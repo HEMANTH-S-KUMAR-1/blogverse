@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { subscribeNewsletter } from '@/app/actions'
 import toast from 'react-hot-toast'
 
 export default function NewsletterForm() {
@@ -19,10 +19,10 @@ export default function NewsletterForm() {
     }
 
     setLoading(true)
-    const { error } = await supabase.from('newsletter_subscribers').insert({ email: email.trim() })
+    const { success, code, error } = await subscribeNewsletter(email.trim())
 
-    if (error) {
-      if (error.code === '23505') {
+    if (!success) {
+      if (code === '23505') {
         toast.error('This email is already subscribed!')
       } else {
         toast.error('Something went wrong. Please try again.')

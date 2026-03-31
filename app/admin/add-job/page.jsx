@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, CATEGORY_CONFIG } from '@/lib/supabase'
+import { CATEGORY_CONFIG } from '@/lib/d1'
+import { fetchJobsAction, addJobAction, deactivateJobAction } from '@/app/actions'
 import toast from 'react-hot-toast'
 
 export default function AdminAddJobPage() {
@@ -27,10 +28,7 @@ export default function AdminAddJobPage() {
   }
 
   const fetchJobs = async () => {
-    const { data } = await supabase
-      .from('job_listings')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const data = await fetchJobsAction()
     if (data) setJobs(data)
   }
 
@@ -39,15 +37,15 @@ export default function AdminAddJobPage() {
     if (!title.trim()) return toast.error('Title is required')
     setSubmitting(true)
 
-    const { error } = await supabase.from('job_listings').insert({
+    const { success } = await addJobAction({
       title: title.trim(),
       company: company.trim() || null,
       description: description.trim() || null,
       category: category || null,
-      apply_url: applyUrl.trim() || null,
+      url: applyUrl.trim() || null,
     })
 
-    if (error) {
+    if (!success) {
       toast.error('Failed to add listing')
     } else {
       toast.success('Job listing added! 🎉')
@@ -62,12 +60,9 @@ export default function AdminAddJobPage() {
   }
 
   const handleDeactivate = async (id) => {
-    const { error } = await supabase
-      .from('job_listings')
-      .update({ is_active: false })
-      .eq('id', id)
+    const { success } = await deactivateJobAction(id)
 
-    if (error) {
+    if (!success) {
       toast.error('Failed to deactivate')
     } else {
       toast.success('Listing deactivated')

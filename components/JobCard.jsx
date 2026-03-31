@@ -1,4 +1,4 @@
-import { CATEGORY_CONFIG } from '@/lib/supabase'
+import { CATEGORY_CONFIG } from '@/lib/d1'
 
 export default function JobCard({ job }) {
   const cat = CATEGORY_CONFIG[job.category]

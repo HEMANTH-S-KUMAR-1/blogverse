@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, getSessionId } from '@/lib/supabase'
+import { getSessionId } from '@/lib/d1'
+import { loadReactions, submitReaction } from '@/app/actions'
 
 const REACTIONS = [
   { type: 'Insightful', emoji: '🧠', label: 'Insightful' },
@@ -18,30 +19,18 @@ export default function ReactionBar({ postId }) {
 
   const fetchReactions = async () => {
     const sessionId = getSessionId()
-    // Run both queries in parallel: aggregate counts and the user's own reaction
-    const [{ data: allReactions }, { data: userReactions }] = await Promise.all([
-      supabase
-        .from('reactions')
-        .select('reaction_type')
-        .eq('post_id', postId),
-      supabase
-        .from('reactions')
-        .select('reaction_type')
-        .eq('post_id', postId)
-        .eq('session_id', sessionId)
-        .limit(1),
-    ])
+    const result = await loadReactions(postId, sessionId)
 
-    if (allReactions) {
+    if (result.all && result.all.length > 0) {
       const grouped = {}
-      allReactions.forEach(r => {
+      result.all.forEach(r => {
         grouped[r.reaction_type] = (grouped[r.reaction_type] || 0) + 1
       })
       setCounts(grouped)
     }
 
-    if (userReactions && userReactions.length > 0) {
-      setUserReaction(userReactions[0].reaction_type)
+    if (result.user && result.user.length > 0) {
+      setUserReaction(result.user[0].reaction_type)
     }
   }
 
@@ -55,13 +44,9 @@ export default function ReactionBar({ postId }) {
     setLoading(true)
 
     const sessionId = getSessionId()
-    const { error } = await supabase.from('reactions').insert({
-      post_id: postId,
-      session_id: sessionId,
-      reaction_type: type,
-    })
+    const { success } = await submitReaction(postId, sessionId, type)
 
-    if (!error) {
+    if (success) {
       setUserReaction(type)
       setCounts(prev => ({ ...prev, [type]: (prev[type] || 0) + 1 }))
     }

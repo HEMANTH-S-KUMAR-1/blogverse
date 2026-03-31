@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
+import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/d1'
+import { createPost } from '@/app/actions'
 import Editor from '@/components/Editor'
 import EditKeyModal from '@/components/EditKeyModal'
+import { Turnstile } from '@marsidev/react-turnstile'
 import toast from 'react-hot-toast'
 import slugify from 'slugify'
 
@@ -24,12 +26,18 @@ export default function WritePage() {
   const [submitting, setSubmitting] = useState(false)
   const [editKey, setEditKey] = useState(null)
   const [postSlug, setPostSlug] = useState(null)
+  const [turnstileToken, setTurnstileToken] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!title.trim()) return toast.error('Please enter a title')
     if (!category) return toast.error('Please select a category')
     if (!content || content === '<p></p>') return toast.error('Please write some content')
+    
+    // In dev, we might not have a token. Production requires it.
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      return toast.error('Please complete the security check')
+    }
 
     setSubmitting(true)
 
@@ -42,7 +50,7 @@ export default function WritePage() {
 
     const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)
 
-    const { data, error } = await supabase.from('posts').insert({
+    const postData = {
       title: title.trim(),
       slug,
       content,
@@ -56,15 +64,16 @@ export default function WritePage() {
       author_avatar_url: identityMode !== 'anonymous' ? (avatarUrl || null) : null,
       category,
       tags: tagsArray,
-      status: 'published',
-    }).select('edit_key, slug').single()
+    }
 
-    if (error) {
+    const { success, error, edit_key, slug: returnedSlug } = await createPost(postData, turnstileToken)
+
+    if (!success) {
       toast.error('Failed to publish post. Please try again.')
       console.error(error)
     } else {
-      setEditKey(data.edit_key)
-      setPostSlug(data.slug)
+      setEditKey(edit_key)
+      setPostSlug(returnedSlug)
       toast.success('Post published! 🎉')
     }
     setSubmitting(false)
@@ -244,10 +253,16 @@ export default function WritePage() {
         </div>
 
         {/* Submit */}
-        <div className="sticky bottom-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 -mx-4 px-4 py-4 flex items-center justify-between">
-          <span className="text-sm text-gray-400">
-            ~{Math.max(1, Math.ceil((content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length) / 200))} min read
-          </span>
+        <div className="sticky bottom-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 -mx-4 px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-400">
+              ~{Math.max(1, Math.ceil((content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length) / 200))} min read
+            </span>
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+              onSuccess={(token) => setTurnstileToken(token)}
+            />
+          </div>
           <button
             type="submit"
             disabled={submitting}

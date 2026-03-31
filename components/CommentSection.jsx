@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { supabase } from '@/lib/supabase'
+import { fetchCommentsAction, submitCommentAction } from '@/app/actions'
+import { Turnstile } from '@marsidev/react-turnstile'
 import toast from 'react-hot-toast'
 
 function timeAgo(dateStr) {
@@ -100,15 +101,10 @@ export default function CommentSection({ postId }) {
   const [name, setName] = useState('')
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState(null)
 
   const fetchComments = async () => {
-    const { data } = await supabase
-      .from('comments')
-      .select('*')
-      .eq('post_id', postId)
-      .order('created_at', { ascending: true })
-      .limit(100)
-
+    const data = await fetchCommentsAction(postId)
     if (data) setComments(data)
   }
 
@@ -120,15 +116,16 @@ export default function CommentSection({ postId }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim() || !content.trim()) return
+
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      return toast.error('Please complete the security check')
+    }
+
     setSubmitting(true)
 
-    const { error } = await supabase.from('comments').insert({
-      post_id: postId,
-      display_name: name.trim(),
-      content: content.trim(),
-    })
+    const { success } = await submitCommentAction(postId, name.trim(), content.trim(), turnstileToken)
 
-    if (error) {
+    if (!success) {
       toast.error('Failed to post comment')
     } else {
       toast.success('Comment posted!')
@@ -139,14 +136,13 @@ export default function CommentSection({ postId }) {
   }
 
   const handleReply = async (parentId, replyName, replyContent) => {
-    const { error } = await supabase.from('comments').insert({
-      post_id: postId,
-      display_name: replyName,
-      content: replyContent,
-      parent_id: parentId,
-    })
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      return toast.error('Please complete the security check first')
+    }
 
-    if (error) {
+    const { success } = await submitCommentAction(postId, replyName, replyContent, turnstileToken, parentId)
+
+    if (!success) {
       toast.error('Failed to post reply')
     } else {
       toast.success('Reply posted!')
@@ -196,14 +192,20 @@ export default function CommentSection({ postId }) {
           required
           id="comment-content-input"
         />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="px-6 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 transition-colors"
-          id="post-comment-btn"
-        >
-          {submitting ? 'Posting...' : 'Post Comment'}
-        </button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+            onSuccess={(token) => setTurnstileToken(token)}
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 transition-colors w-full sm:w-auto"
+            id="post-comment-btn"
+          >
+            {submitting ? 'Posting...' : 'Post Comment'}
+          </button>
+        </div>
       </form>
 
       {/* Comments List */}

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
+import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/d1'
 
 export default function PostCard({ post }) {
   const cat = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.tech

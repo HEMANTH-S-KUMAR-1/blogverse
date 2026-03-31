@@ -1,6 +1,7 @@
 'use client'
 
-import { supabase, getSessionId, CATEGORY_CONFIG } from '@/lib/supabase'
+import { getSessionId, CATEGORY_CONFIG } from '@/lib/d1'
+import { trackAffiliateClick } from '@/app/actions'
 
 export default function AffiliateBanner({ category, postId }) {
   const cat = CATEGORY_CONFIG[category]
@@ -37,11 +38,7 @@ export default function AffiliateBanner({ category, postId }) {
 
   const handleClick = async () => {
     const sessionId = getSessionId()
-    await supabase.from('affiliate_clicks').insert({
-      affiliate_name: name,
-      post_id: postId || null,
-      session_id: sessionId,
-    })
+    await trackAffiliateClick(name, postId || null, sessionId)
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 

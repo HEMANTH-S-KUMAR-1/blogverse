@@ -1,6 +1,6 @@
 'use client'
 
-import { CATEGORY_CONFIG } from '@/lib/supabase'
+import { CATEGORY_CONFIG } from '@/lib/d1'
 import Link from 'next/link'
 
 export default function CategoryFilter() {

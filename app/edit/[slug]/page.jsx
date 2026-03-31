@@ -4,7 +4,8 @@ export const runtime = 'edge'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
+import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/d1'
+import { verifyEditKey, updatePostAction } from '@/app/actions'
 import Editor from '@/components/Editor'
 import toast from 'react-hot-toast'
 
@@ -33,22 +34,24 @@ export default function EditPage({ params }) {
     if (!key.trim() || !slug) return
     setVerifying(true)
 
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('slug', slug)
-      .single()
+    const { success, post: data, error } = await verifyEditKey(slug, key.trim())
 
-    if (error || !data) {
-      toast.error('Post not found')
-    } else if (data.edit_key !== key.trim()) {
-      toast.error('Wrong edit key. Please try again.')
+    if (!success) {
+      if (error === 'Post not found') {
+        toast.error('Post not found')
+      } else {
+        toast.error('Wrong edit key. Please try again.')
+      }
     } else {
       setPost(data)
       setTitle(data.title)
       setContent(data.content || '')
       setCategory(data.category)
-      setTags((data.tags || []).join(', '))
+      let tagsArray = []
+      try {
+        tagsArray = typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags
+      } catch(e) {}
+      setTags((tagsArray || []).join(', '))
       setFeaturedImage(data.featured_image_url || '')
       setAvatarUrl(data.author_avatar_url || '')
       setVerified(true)
@@ -66,7 +69,8 @@ export default function EditPage({ params }) {
     const excerpt = plainText.substring(0, 150).trim()
     const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)
 
-    const { error } = await supabase.from('posts').update({
+    const postData = {
+      id: post.id,
       title: title.trim(),
       content,
       excerpt,
@@ -74,9 +78,12 @@ export default function EditPage({ params }) {
       author_avatar_url: post.identity_mode !== 'anonymous' ? (avatarUrl || null) : null,
       category,
       tags: tagsArray,
-    }).eq('id', post.id)
+      slug
+    }
 
-    if (error) {
+    const { success } = await updatePostAction(postData)
+
+    if (!success) {
       toast.error('Failed to update post')
     } else {
       toast.success('Post updated! 🎉')

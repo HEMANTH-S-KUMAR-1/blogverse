@@ -9,3 +9,16 @@ binding = "ASSETS"
 
 [vars]
 # Environment variables are set in the Cloudflare dashboard
+
+[[d1_databases]]
+binding = "DB"
+database_name = "blogverse_db"
+database_id = "5a62553c-e713-4047-9dd9-4764866754be"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "blogverse_assets"
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "blogverse_events"

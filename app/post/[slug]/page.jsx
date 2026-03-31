@@ -1,4 +1,4 @@
-import { supabase, CATEGORY_CONFIG, safeImageUrl } from '@/lib/supabase'
+import { CATEGORY_CONFIG, safeImageUrl, getDB } from '@/lib/d1'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ReactionBar from '@/components/ReactionBar'
@@ -16,11 +16,9 @@ export const runtime = 'edge'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
-  const { data: post } = await supabase
-    .from('posts')
-    .select('title, excerpt')
-    .eq('slug', slug)
-    .single()
+  const db = await getDB()
+  const { results } = await db.prepare("SELECT title, excerpt, category, author_display_name, published_at, featured_image_url FROM posts WHERE slug = ?").bind(slug).all()
+  const post = results?.[0]
 
   if (!post) return { title: 'Post Not Found' }
   return {
@@ -32,24 +30,21 @@ export async function generateMetadata({ params }) {
 export default async function PostPage({ params }) {
   const { slug } = await params
 
-  const { data: post, error } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
+  const db = await getDB()
+  const { results: postResults } = await db.prepare("SELECT * FROM posts WHERE slug = ? AND status = 'published'").bind(slug).all()
+  const post = postResults?.[0]
 
-  if (!post || error) notFound()
+  if (!post) notFound()
+
+  // tags are JSON stringified in SQLite
+  try {
+    post.tags = JSON.parse(post.tags)
+  } catch(e) {
+    post.tags = []
+  }
 
   // Get related posts
-  const { data: relatedPosts } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('category', post.category)
-    .eq('status', 'published')
-    .neq('id', post.id)
-    .order('published_at', { ascending: false })
-    .limit(3)
+  const { results: relatedPosts } = await db.prepare("SELECT * FROM posts WHERE category = ? AND status = 'published' AND id != ? ORDER BY published_at DESC LIMIT 3").bind(post.category, post.id).all()
 
   const cat = CATEGORY_CONFIG[post.category]
   const date = new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -78,8 +73,38 @@ export default async function PostPage({ params }) {
     }
   })
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        headline: post.title,
+        description: post.excerpt,
+        image: post.featured_image_url || undefined,
+        datePublished: post.published_at,
+        dateModified: post.published_at,
+        author: {
+          '@type': 'Person',
+          name: post.author_display_name || 'Anonymous'
+        }
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://blogverse.com/' },
+          { '@type': 'ListItem', position: 2, name: cat?.label || 'Blog', item: `https://blogverse.com/category/${post.category}` },
+          { '@type': 'ListItem', position: 3, name: post.title }
+        ]
+      }
+    ]
+  }
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ViewIncrementer postId={post.id} />
 
       {/* Featured Image */}
