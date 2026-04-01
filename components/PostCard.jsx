@@ -6,67 +6,65 @@ export default function PostCard({ post }) {
   const date = new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 
   const categoryColorClasses = {
-    health: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    tech: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    finance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    student: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-    business: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    eco: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+    health: 'border-emerald-200 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400',
+    tech: 'border-blue-200 text-blue-600 dark:border-blue-800 dark:text-blue-400',
+    finance: 'border-amber-200 text-amber-600 dark:border-amber-800 dark:text-amber-400',
+    student: 'border-violet-200 text-violet-600 dark:border-violet-800 dark:text-violet-400',
+    business: 'border-red-200 text-red-600 dark:border-red-800 dark:text-red-400',
+    eco: 'border-teal-200 text-teal-600 dark:border-teal-800 dark:text-teal-400',
   }
 
   return (
-    <Link href={`/post/${post.slug}`} className="group block">
-      <article className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 transition-all duration-300 hover:-translate-y-1">
+    <Link href={`/post/${post.slug}`} className="group block h-full">
+      <article className="flex flex-col h-full rounded-3xl border border-border bg-surface overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-black transition-all duration-500 hover:-translate-y-1">
         {/* Featured Image */}
-        {post.featured_image_url && (
-          <div className="aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="relative aspect-video overflow-hidden bg-background">
+          {post.featured_image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={post.featured_image_url}
               alt={post.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               loading="lazy"
             />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 dark:from-zinc-900 dark:to-zinc-800">
+              <span className="text-5xl group-hover:scale-125 transition-transform duration-500">{cat.emoji}</span>
+            </div>
+          )}
+          
+          <div className="absolute top-4 left-4">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-background/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-widest ${categoryColorClasses[post.category] || categoryColorClasses.tech}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              {cat.label}
+            </span>
           </div>
-        )}
-        {!post.featured_image_url && (
-          <div className="aspect-video bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
-            <span className="text-4xl">{cat.emoji}</span>
-          </div>
-        )}
+        </div>
 
-        <div className="p-5">
-          {/* Category Badge */}
-          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${categoryColorClasses[post.category] || categoryColorClasses.tech}`}>
-            {cat.label}
-          </span>
-
+        <div className="flex flex-col p-6 flex-1">
           {/* Title */}
-          <h3 className="mt-3 text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+          <h3 className="text-xl font-bold text-foreground leading-tight line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
             {post.title}
           </h3>
 
           {/* Excerpt */}
           {post.excerpt && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 line-clamp-2 flex-1">
               {post.excerpt}
             </p>
           )}
 
           {/* Meta */}
-          <div className="mt-4 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+          <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/50">
             <div className="flex items-center gap-2">
-              {safeImageUrl(post.author_avatar_url) ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={safeImageUrl(post.author_avatar_url)} alt={post.author_display_name || 'Author'} className="w-6 h-6 rounded-full object-cover" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
-                  {(post.author_display_name || 'A')[0].toUpperCase()}
-                </div>
-              )}
-              <span>{post.author_display_name || 'Anonymous'}</span>
+              <div className="w-6 h-6 rounded-full bg-linear-to-br from-slate-200 to-slate-300 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center text-[10px] font-black">
+                {(post.author_display_name || 'A')[0].toUpperCase()}
+              </div>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                {post.author_display_name || 'Anonymous'}
+              </span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
               <span>{date}</span>
               <span>·</span>
               <span>{post.views || 0} views</span>
