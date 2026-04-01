@@ -24,7 +24,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${lora.variable}`}>
-      <body className="min-h-screen flex flex-col antialiased">
+      <body className="bg-background text-foreground transition-colors duration-300 min-h-screen flex flex-col antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster
             position="bottom-right"
