@@ -48,3 +48,25 @@ CREATE TABLE IF NOT EXISTS reactions (
   UNIQUE(post_id, session_id),
   FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS job_listings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  company TEXT,
+  description TEXT,
+  category TEXT,
+  apply_url TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS digital_products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  price TEXT,
+  category TEXT,
+  thumbnail_url TEXT,
+  gumroad_url TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
