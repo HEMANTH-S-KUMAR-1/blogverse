@@ -3,6 +3,9 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".open-next"
 
+[images]
+binding = "IMAGES"
+
 [vars]
 # Runtime environment variables are set in the Cloudflare Pages dashboard
 
