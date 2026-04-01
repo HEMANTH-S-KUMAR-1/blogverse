@@ -57,10 +57,10 @@ export default function Editor({ content, onUpdate }) {
     }
   }, [content, editor])
 
-  if (!editor) return null
-
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef(null)
+
+  if (!editor) return null
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0]

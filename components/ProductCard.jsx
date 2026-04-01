@@ -13,39 +13,63 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+    <div className="group flex flex-col rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
       {/* Thumbnail */}
-      {product.thumbnail_url ? (
-        <div className="aspect-video bg-gray-100 dark:bg-gray-800">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.thumbnail_url} alt={product.title} className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      ) : (
-        <div className="aspect-video bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
-          <span className="text-5xl">{categoryEmoji[product.category] || '📦'}</span>
-        </div>
-      )}
-
-      <div className="p-5">
+      <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
+        {product.thumbnail_url ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img 
+            src={product.thumbnail_url} 
+            alt={product.title} 
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+            loading="lazy" 
+          />
+        ) : (
+          <div className="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+            <span className="text-6xl transform transition-transform group-hover:scale-125 duration-300">
+              {categoryEmoji[product.category] || '📦'}
+            </span>
+          </div>
+        )}
+        
         {product.category && (
-          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${categoryColorClasses[product.category] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}`}>
-            {product.category}
-          </span>
+          <div className="absolute top-4 left-4">
+            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${categoryColorClasses[product.category] || 'bg-white text-gray-900'}`}>
+              {product.category}
+            </span>
+          </div>
         )}
-        <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{product.title}</h3>
+      </div>
+
+      <div className="flex flex-col p-6 flex-1">
+        <h3 className="text-xl font-extrabold text-gray-900 dark:text-white leading-tight mb-2 group-hover:text-emerald-500 transition-colors">
+          {product.title}
+        </h3>
+        
         {product.description && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{product.description}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6">
+            {product.description}
+          </p>
         )}
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{product.price}</span>
+        
+        <div className="mt-auto flex items-center justify-between gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-tight">Investment</span>
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">
+              {product.price}
+            </span>
+          </div>
+          
           <a
             href={product.gumroad_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-linear-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-sm font-medium transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold transition-all hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white shadow-lg active:scale-95"
           >
-            Buy Now
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            Get It Now
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
           </a>
         </div>
       </div>

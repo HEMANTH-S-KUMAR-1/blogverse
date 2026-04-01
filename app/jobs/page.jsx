@@ -1,6 +1,5 @@
-import { getDB } from '@/lib/d1'
+import { getJobs } from '@/app/actions'
 import JobCard from '@/components/JobCard'
-import Link from 'next/link'
 
 export const metadata = {
   title: 'Find Opportunities — BlogVerse',
@@ -11,8 +10,7 @@ export const revalidate = 60
 export const dynamic = 'force-dynamic'
 
 export default async function JobsPage() {
-  const db = await getDB()
-  const { results: jobs } = await db.prepare("SELECT * FROM job_listings WHERE is_active = TRUE ORDER BY created_at DESC").all()
+  const jobs = await getJobs()
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

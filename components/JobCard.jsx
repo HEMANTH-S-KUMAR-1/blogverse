@@ -1,7 +1,4 @@
-import { CATEGORY_CONFIG } from '@/lib/d1'
-
 export default function JobCard({ job }) {
-  const cat = CATEGORY_CONFIG[job.category]
   const date = new Date(job.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 
   const categoryColorClasses = {
@@ -14,32 +11,42 @@ export default function JobCard({ job }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-      <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{job.title}</h3>
-          {job.company && <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-0.5">{job.company}</p>}
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">{job.title}</h3>
+          {job.company && <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mt-1">{job.company}</p>}
         </div>
-        {job.category && cat && (
-          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${categoryColorClasses[job.category]}`}>
-            {cat.label}
+        {job.category && (
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shrink-0 ${categoryColorClasses[job.category] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}`}>
+            {job.category}
           </span>
         )}
       </div>
+      
       {job.description && (
-        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{job.description}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 mb-6 flex-1">
+          {job.description}
+        </p>
       )}
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-xs text-gray-400">Posted {date}</span>
+      
+      <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-tight">Posted on</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{date}</span>
+        </div>
+        
         {job.apply_url && (
           <a
             href={job.apply_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95"
           >
             Apply Now
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
           </a>
         )}
       </div>

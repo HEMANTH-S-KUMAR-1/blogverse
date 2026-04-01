@@ -1,4 +1,4 @@
-import { getDB } from '@/lib/d1'
+import { getProducts } from '@/app/actions'
 import ProductCard from '@/components/ProductCard'
 
 export const metadata = {
@@ -10,8 +10,7 @@ export const revalidate = 60
 export const dynamic = 'force-dynamic'
 
 export default async function ProductsPage() {
-  const db = await getDB()
-  const { results: products } = await db.prepare("SELECT * FROM digital_products ORDER BY created_at DESC").all()
+  const products = await getProducts()
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

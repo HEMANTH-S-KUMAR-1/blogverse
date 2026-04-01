@@ -146,28 +146,37 @@ export async function updatePostAction(postData) {
   }
 }
 
-export async function fetchJobsAction() {
+export async function getJobs() {
   const db = await getDB()
-  const { results } = await db.prepare('SELECT * FROM job_listings ORDER BY created_at DESC').all()
+  const { results } = await db.prepare('SELECT * FROM job_listings WHERE is_active = TRUE ORDER BY created_at DESC').all()
   return results
 }
 
-export async function addJobAction(jobData) {
+export async function postJob(jobData) {
   const db = await getDB()
   try {
-    await db.prepare('INSERT INTO job_listings (id, title, company, description, category, url) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(crypto.randomUUID(), jobData.title, jobData.company, jobData.description, jobData.category, jobData.url)
+    await db.prepare('INSERT INTO job_listings (title, company, description, category, apply_url) VALUES (?, ?, ?, ?, ?)')
+      .bind(jobData.title, jobData.company, jobData.description, jobData.category, jobData.apply_url)
       .run()
+    revalidatePath('/jobs')
     return { success: true }
   } catch (error) {
+    console.error('Failed to post job:', error)
     return { success: false }
   }
+}
+
+export async function getProducts() {
+  const db = await getDB()
+  const { results } = await db.prepare('SELECT * FROM digital_products ORDER BY created_at DESC').all()
+  return results
 }
 
 export async function deactivateJobAction(id) {
   const db = await getDB()
   try {
     await db.prepare('UPDATE job_listings SET is_active = FALSE WHERE id = ?').bind(id).run()
+    revalidatePath('/jobs')
     return { success: true }
   } catch (error) {
     return { success: false }

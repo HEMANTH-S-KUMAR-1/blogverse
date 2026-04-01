@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { CATEGORY_CONFIG } from '@/lib/d1'
-import { fetchJobsAction, addJobAction, deactivateJobAction } from '@/app/actions'
+import { getJobs, postJob, deactivateJobAction } from '@/app/actions'
 import toast from 'react-hot-toast'
 
 export default function AdminAddJobPage() {
@@ -28,7 +28,7 @@ export default function AdminAddJobPage() {
   }
 
   const fetchJobs = async () => {
-    const data = await fetchJobsAction()
+    const data = await getJobs()
     if (data) setJobs(data)
   }
 
@@ -37,12 +37,12 @@ export default function AdminAddJobPage() {
     if (!title.trim()) return toast.error('Title is required')
     setSubmitting(true)
 
-    const { success } = await addJobAction({
+    const { success } = await postJob({
       title: title.trim(),
       company: company.trim() || null,
       description: description.trim() || null,
       category: category || null,
-      url: applyUrl.trim() || null,
+      apply_url: applyUrl.trim() || null,
     })
 
     if (!success) {
