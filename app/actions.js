@@ -176,7 +176,7 @@ export async function deactivateJobAction(id) {
 
 export async function incrementViews(postId) {
   const db = await getDB()
-  const ctx = await getRequestContext()
+  const ctx = await getCloudflareContext()
   
   try {
     // 1. Update D1
