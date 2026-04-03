@@ -43,3 +43,6 @@ next-env.d.ts
 
 # cloudflare
 /.wrangler/
+.next/dev/cache/
+.next/dev/logs/
+.next/dev/trace
