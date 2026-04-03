@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 const tmpDir = join(process.cwd(), '.tmp-build');
@@ -49,6 +49,18 @@ if (existsSync(handlerPath)) {
   console.log('[OpenNext Fix] Patch applied.');
 } else {
   console.log(`[OpenNext Fix] Note: handler.mjs not found at ${handlerPath}`);
+}
+
+// Remove heavy unused assets to reduce bundle size under 3MB free limit
+const heavyPaths = [
+  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', '@vercel', 'og'),
+];
+
+for (const f of heavyPaths) {
+  if (existsSync(f)) {
+    console.log(`[OpenNext Fix] Removing heavy asset: ${f}`);
+    rmSync(f, { recursive: true, force: true });
+  }
 }
 
 // Post-build: Rename worker.js to _worker.js for Cloudflare Pages compatibility
