@@ -6,6 +6,7 @@ import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import { useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast'
 
 const MenuButton = ({ onClick, active, children, title }) => (
   <button
@@ -58,6 +59,8 @@ export default function Editor({ content, onUpdate }) {
   }, [content, editor])
 
   const [uploading, setUploading] = useState(false)
+  const [showLinkInput, setShowLinkInput] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
   const fileInputRef = useRef(null)
 
   if (!editor) return null
@@ -79,11 +82,12 @@ export default function Editor({ content, onUpdate }) {
       
       if (res.ok && data.url) {
         editor.chain().focus().setImage({ src: data.url }).run()
+        toast.success('Image uploaded!')
       } else {
-        alert('Upload failed: ' + (data.error || 'Unknown error'))
+        toast.error('Upload failed: ' + (data.error || 'Unknown error'))
       }
     } catch (err) {
-      alert('Upload failed: ' + err.message)
+      toast.error('Upload failed: ' + err.message)
     } finally {
       setUploading(false)
       // Reset input
@@ -95,9 +99,22 @@ export default function Editor({ content, onUpdate }) {
     fileInputRef.current?.click()
   }
 
-  const addLink = () => {
-    const url = prompt('Enter link URL:')
-    if (url) editor.chain().focus().setLink({ href: url }).run()
+  const toggleLink = () => {
+    if (editor.isActive('link')) {
+      editor.chain().focus().unsetLink().run()
+      return
+    }
+    const previousUrl = editor.getAttributes('link').href || ''
+    setLinkUrl(previousUrl)
+    setShowLinkInput(true)
+  }
+
+  const setLink = () => {
+    if (linkUrl) {
+      editor.chain().focus().setLink({ href: linkUrl }).run()
+    }
+    setShowLinkInput(false)
+    setLinkUrl('')
   }
 
   return (
@@ -141,9 +158,34 @@ export default function Editor({ content, onUpdate }) {
         <MenuButton onClick={addImage} title="Upload Image" active={uploading}>
           {uploading ? '⏳' : '🖼'}
         </MenuButton>
-        <MenuButton onClick={addLink} active={editor.isActive('link')} title="Insert Link">
-          🔗
-        </MenuButton>
+        <div className="relative flex items-center">
+          <MenuButton onClick={toggleLink} active={editor.isActive('link')} title="Insert Link">
+            🔗
+          </MenuButton>
+          
+          {showLinkInput && (
+            <div className="absolute top-full left-0 mt-2 z-50 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl flex gap-2 min-w-[280px]">
+              <input
+                type="url"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="https://example.com"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') setLink()
+                  if (e.key === 'Escape') setShowLinkInput(false)
+                }}
+                className="flex-1 px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+              <button 
+                onClick={setLink}
+                className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded hover:bg-emerald-600"
+              >
+                Set
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Editor Content */}

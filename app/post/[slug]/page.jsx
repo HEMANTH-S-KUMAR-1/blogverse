@@ -1,6 +1,8 @@
 import { CATEGORY_CONFIG, safeImageUrl, getDB } from '@/lib/d1'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
+import DOMPurify from 'isomorphic-dompurify'
 import ReactionBar from '@/components/ReactionBar'
 import ShareButtons from '@/components/ShareButtons'
 import TipButton from '@/components/TipButton'
@@ -12,18 +14,44 @@ import PostCard from '@/components/PostCard'
 import ViewIncrementer from '@/components/ViewIncrementer'
 
 export const revalidate = 60
-export const dynamic = 'force-dynamic'
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.pages.dev'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const db = await getDB()
-  const { results } = await db.prepare("SELECT title, excerpt, category, author_display_name, published_at, featured_image_url FROM posts WHERE slug = ?").bind(slug).all()
+  const { results } = await db.prepare(
+    'SELECT title, excerpt, category, author_display_name, published_at, featured_image_url FROM posts WHERE slug = ?'
+  ).bind(slug).all()
   const post = results?.[0]
 
   if (!post) return { title: 'Post Not Found' }
+
+  const title = `${post.title} — BlogVerse`
+  const description = post.excerpt || 'Read this post on BlogVerse'
+
   return {
-    title: `${post.title} — BlogVerse`,
-    description: post.excerpt || 'Read this post on BlogVerse',
+    title,
+    description,
+    alternates: {
+      canonical: `${siteUrl}/post/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      publishedTime: post.published_at,
+      authors: post.author_display_name ? [post.author_display_name] : [],
+      images: post.featured_image_url
+        ? [{ url: post.featured_image_url, width: 1200, height: 630, alt: post.title }]
+        : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: post.featured_image_url ? [post.featured_image_url] : [],
+    },
   }
 }
 
@@ -31,7 +59,9 @@ export default async function PostPage({ params }) {
   const { slug } = await params
 
   const db = await getDB()
-  const { results: postResults } = await db.prepare("SELECT * FROM posts WHERE slug = ? AND status = 'published'").bind(slug).all()
+  const { results: postResults } = await db.prepare(
+    "SELECT * FROM posts WHERE slug = ? AND status = 'published'"
+  ).bind(slug).all()
   const post = postResults?.[0]
 
   if (!post) notFound()
@@ -44,24 +74,25 @@ export default async function PostPage({ params }) {
   }
 
   // Get related posts
-  const { results: relatedPosts } = await db.prepare("SELECT * FROM posts WHERE category = ? AND status = 'published' AND id != ? ORDER BY published_at DESC LIMIT 3").bind(post.category, post.id).all()
+  const { results: relatedPosts } = await db.prepare(
+    "SELECT * FROM posts WHERE category = ? AND status = 'published' AND id != ? ORDER BY published_at DESC LIMIT 3"
+  ).bind(post.category, post.id).all()
 
   const cat = CATEGORY_CONFIG[post.category]
   const date = new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   const wordCount = post.content?.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length || 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
 
-  const categoryBadgeClasses = {
-    health: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    tech: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    finance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    student: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-    business: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    eco: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
-  }
+  // 1. Sanitize content first — prevents XSS from user-generated HTML
+  const safeContent = DOMPurify.sanitize(post.content || '', {
+    USE_PROFILES: { html: true },
+    // Allow iframes for embedded videos etc but strip scripts
+    ADD_TAGS: ['iframe'],
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'],
+  })
 
-  // Split content for injecting ads
-  const contentParts = post.content?.split('</p>') || []
+  // 2. Inject ad/affiliate placeholder markers into sanitized content
+  const contentParts = safeContent.split('</p>')
   let renderedContent = ''
   contentParts.forEach((part, i) => {
     renderedContent += part + (i < contentParts.length - 1 ? '</p>' : '')
@@ -91,13 +122,15 @@ export default async function PostPage({ params }) {
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://blogverse.com/' },
-          { '@type': 'ListItem', position: 2, name: cat?.label || 'Blog', item: `https://blogverse.com/category/${post.category}` },
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
+          { '@type': 'ListItem', position: 2, name: cat?.label || 'Blog', item: `${siteUrl}/category/${post.category}` },
           { '@type': 'ListItem', position: 3, name: post.title }
         ]
       }
     ]
   }
+
+  const safeAvatarUrl = safeImageUrl(post.author_avatar_url)
 
   return (
     <div>
@@ -109,9 +142,14 @@ export default async function PostPage({ params }) {
 
       {/* Featured Image */}
       {post.featured_image_url && (
-        <div className="w-full max-h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.featured_image_url} alt={post.title} className="w-full h-full object-cover" />
+        <div className="w-full max-h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800 relative" style={{ height: '500px' }}>
+          <Image
+            src={post.featured_image_url}
+            alt={post.title}
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
       )}
 
@@ -129,7 +167,7 @@ export default async function PostPage({ params }) {
             {/* Category & Meta */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Link href={`/category/${post.category}`}>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${categoryBadgeClasses[post.category]}`}>
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${cat?.badgeClass || ''}`}>
                   {cat?.label}
                 </span>
               </Link>
@@ -147,9 +185,14 @@ export default async function PostPage({ params }) {
 
             {/* Author */}
             <div className="flex items-center gap-3 mb-8 pb-8 border-b border-gray-200 dark:border-gray-800">
-              {safeImageUrl(post.author_avatar_url) ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={safeImageUrl(post.author_avatar_url)} alt={post.author_display_name || 'Author'} className="w-10 h-10 rounded-full object-cover" />
+              {safeAvatarUrl ? (
+                <Image
+                  src={safeAvatarUrl}
+                  alt={post.author_display_name || 'Author'}
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-linear-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
                   {(post.author_display_name || 'A')[0].toUpperCase()}
@@ -167,7 +210,7 @@ export default async function PostPage({ params }) {
               </div>
             </div>
 
-            {/* Post Content */}
+            {/* Post Content — sanitized before rendering */}
             <div className="prose-content" dangerouslySetInnerHTML={{ __html: renderedContent }} />
 
             {/* Inline Affiliate (after content) */}

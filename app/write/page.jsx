@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/d1'
 import { createPost } from '@/app/actions'
 import Editor from '@/components/Editor'
@@ -154,8 +155,13 @@ export default function WritePage() {
               />
               {safeImageUrl(avatarUrl) && (
                 <div className="flex items-center gap-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={safeImageUrl(avatarUrl)} alt="Avatar preview" className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                  <Image
+                    src={safeImageUrl(avatarUrl)}
+                    alt="Avatar preview"
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                  />
                   <span className="text-xs text-gray-400">Avatar preview</span>
                 </div>
               )}
@@ -239,9 +245,8 @@ export default function WritePage() {
             id="featured-image-input"
           />
           {featuredImage && (
-            <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={featuredImage} alt="Preview" className="w-full h-full object-cover" />
+            <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 relative">
+              <Image src={featuredImage} alt="Preview" fill className="object-cover" />
             </div>
           )}
         </div>

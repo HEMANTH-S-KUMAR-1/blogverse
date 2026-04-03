@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync } from 'node:fs';
+import { mkdirSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -35,4 +35,16 @@ const result = spawnSync(binary, ['build'], {
 if (result.status !== 0) {
   console.error(`[OpenNext Fix] Build failed with status ${result.status}`);
   process.exit(result.status || 1);
+}
+
+// Post-build: Rename worker.js to _worker.js for Cloudflare Pages compatibility
+const outputDir = join(process.cwd(), '.open-next');
+const oldPath = join(outputDir, 'worker.js');
+const newPath = join(outputDir, '_worker.js');
+
+if (existsSync(oldPath)) {
+  console.log(`[OpenNext Fix] Renaming ${oldPath} to ${newPath}`);
+  renameSync(oldPath, newPath);
+} else {
+  console.log(`[OpenNext Fix] Note: ${oldPath} not found. It might have been already renamed or build failed.`);
 }

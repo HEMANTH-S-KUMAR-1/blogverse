@@ -1,8 +1,3 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 
-export default defineCloudflareConfig({
-    minify: true,
-    dangerous: {
-        enableForcedRuntime: "edge",
-    },
-});
+export default defineCloudflareConfig({});

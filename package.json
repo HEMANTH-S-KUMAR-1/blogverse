@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:worker": "node build-worker.mjs",
-    "deploy": "npm run build:worker && move .open-next\\worker.js .open-next\\_worker.js && wrangler pages deploy .open-next",
+    "deploy": "npm run build:worker && wrangler pages deploy .open-next",
     "preview": "opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "eslint"
@@ -20,6 +20,7 @@
     "@tiptap/pm": "^3.21.0",
     "@tiptap/react": "^3.21.0",
     "@tiptap/starter-kit": "^3.21.0",
+    "isomorphic-dompurify": "^3.7.1",
     "lucide-react": "^1.7.0",
     "next": "16.2.1",
     "next-themes": "^0.4.6",

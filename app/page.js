@@ -1,5 +1,6 @@
 import { CATEGORY_CONFIG } from '@/lib/d1'
 import { getDB } from '@/lib/d1'
+import Image from 'next/image'
 import PostCard from '@/components/PostCard'
 import NewsletterForm from '@/components/NewsletterForm'
 import AffiliateBanner from '@/components/AffiliateBanner'
@@ -8,7 +9,6 @@ import Link from 'next/link'
 import CategoryFilter from '@/components/CategoryFilter'
 
 export const revalidate = 60
-export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const db = await getDB()
@@ -57,12 +57,14 @@ export default async function HomePage() {
                 </div>
               </div>
               {featured.featured_image_url && (
-                <div className="order-1 lg:order-2 aspect-video lg:aspect-square xl:aspect-video rounded-2xl overflow-hidden shadow-2xl">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={featured.featured_image_url} 
-                    alt={featured.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
+                <div className="order-1 lg:order-2 aspect-video lg:aspect-square xl:aspect-video rounded-2xl overflow-hidden shadow-2xl relative">
+                  <Image
+                    src={featured.featured_image_url}
+                    alt={featured.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    priority
                   />
                 </div>
               )}

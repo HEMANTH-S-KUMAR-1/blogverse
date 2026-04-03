@@ -1,18 +1,10 @@
 import Link from 'next/link'
-import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/d1'
+import Image from 'next/image'
+import { CATEGORY_CONFIG } from '@/lib/d1'
 
 export default function PostCard({ post }) {
   const cat = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.tech
   const date = new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-
-  const categoryColorClasses = {
-    health: 'border-emerald-200 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400',
-    tech: 'border-blue-200 text-blue-600 dark:border-blue-800 dark:text-blue-400',
-    finance: 'border-amber-200 text-amber-600 dark:border-amber-800 dark:text-amber-400',
-    student: 'border-violet-200 text-violet-600 dark:border-violet-800 dark:text-violet-400',
-    business: 'border-red-200 text-red-600 dark:border-red-800 dark:text-red-400',
-    eco: 'border-teal-200 text-teal-600 dark:border-teal-800 dark:text-teal-400',
-  }
 
   return (
     <Link href={`/post/${post.slug}`} className="group block h-full">
@@ -20,12 +12,12 @@ export default function PostCard({ post }) {
         {/* Featured Image */}
         <div className="relative aspect-video overflow-hidden bg-background">
           {post.featured_image_url ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
+            <Image
               src={post.featured_image_url}
               alt={post.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              loading="lazy"
+              fill
+              className="object-cover group-hover:scale-110 transition-transform duration-700"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 dark:from-zinc-900 dark:to-zinc-800">
@@ -34,7 +26,7 @@ export default function PostCard({ post }) {
           )}
           
           <div className="absolute top-4 left-4">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-background/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-widest ${categoryColorClasses[post.category] || categoryColorClasses.tech}`}>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-background/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-widest ${cat?.borderClass || ''}`}>
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               {cat.label}
             </span>

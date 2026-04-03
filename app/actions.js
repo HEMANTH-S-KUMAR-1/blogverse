@@ -3,12 +3,20 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { getDB } from '@/lib/d1'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 
 async function verifyTurnstile(token) {
   if (!token) return false
   const ctx = await getCloudflareContext()
   const secret = ctx?.env?.TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY
-  if (!secret) return true // bypass if not configured during development
+
+  if (!secret) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[WARN] TURNSTILE_SECRET_KEY is not set — bypassing Turnstile verification in development.')
+      return true
+    }
+    throw new Error('TURNSTILE_SECRET_KEY is not configured. Turnstile verification cannot proceed.')
+  }
 
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
@@ -17,6 +25,25 @@ async function verifyTurnstile(token) {
   })
   const data = await res.json()
   return data.success
+}
+
+export async function adminLoginAction(password) {
+  const adminSecret = process.env.ADMIN_SECRET
+  if (!adminSecret) {
+    return { success: false, error: 'Admin auth not configured' }
+  }
+  if (password !== adminSecret) {
+    return { success: false, error: 'Invalid password' }
+  }
+  const cookieStore = await cookies()
+  cookieStore.set('admin_token', adminSecret, {
+    httpOnly: true,
+    sameSite: 'strict',
+    maxAge: 86400, // 24 hours
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+  })
+  return { success: true }
 }
 
 export async function createPost(postData, turnstileToken) {
@@ -93,8 +120,48 @@ export async function loadReactions(postId, sessionId) {
 
 export async function fetchCommentsAction(postId) {
   const db = await getDB()
-  const { results } = await db.prepare('SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC LIMIT 100').bind(postId).all()
+  const { results } = await db.prepare(
+    'SELECT * FROM comments WHERE post_id = ? AND (is_hidden = FALSE OR is_hidden IS NULL) ORDER BY created_at ASC LIMIT 100'
+  ).bind(postId).all()
   return results
+}
+
+export async function getAdminCommentsAction() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('admin_token')?.value
+  const serverSecret = process.env.ADMIN_SECRET
+  
+  if (!serverSecret || token !== serverSecret) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  const db = await getDB()
+  const { results } = await db.prepare(`
+    SELECT c.*, p.title as post_title 
+    FROM comments c 
+    JOIN posts p ON c.post_id = p.id 
+    ORDER BY c.created_at DESC 
+    LIMIT 200
+  `).all()
+  return { success: true, comments: results }
+}
+
+export async function hideCommentAction(commentId) {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('admin_token')?.value
+  const serverSecret = process.env.ADMIN_SECRET
+  
+  if (!serverSecret || token !== serverSecret) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  const db = await getDB()
+  try {
+    await db.prepare('UPDATE comments SET is_hidden = TRUE WHERE id = ?').bind(commentId).run()
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
 }
 
 export async function submitCommentAction(postId, displayName, content, turnstileToken, parentId = null) {
