@@ -2,7 +2,6 @@ import { safeImageUrl, getDB } from '@/lib/d1'
 import PostCard from '@/components/PostCard'
 import TipButton from '@/components/TipButton'
 
-export const revalidate = 60
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
@@ -19,7 +18,13 @@ export default async function WriterPage({ params }) {
   const decodedName = decodeURIComponent(username)
 
   const db = await getDB()
-  const { results: posts } = await db.prepare("SELECT * FROM posts WHERE author_display_name = ? AND identity_mode IN ('pseudonym', 'public') AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(decodedName).all()
+  let posts = []
+  try {
+    const result = await db.prepare("SELECT * FROM posts WHERE author_display_name = ? AND identity_mode IN ('pseudonym', 'public') AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(decodedName).all()
+    posts = result.results || []
+  } catch (e) {
+    console.warn("WriterPage: DB not ready at build time:", e.message)
+  }
 
   const totalViews = posts?.reduce((sum, p) => sum + (p.views || 0), 0) || 0
   const latestPost = posts?.[0]

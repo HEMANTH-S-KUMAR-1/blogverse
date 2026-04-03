@@ -13,16 +13,22 @@ import AdSenseSlot from '@/components/AdSenseSlot'
 import PostCard from '@/components/PostCard'
 import ViewIncrementer from '@/components/ViewIncrementer'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.pages.dev'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const db = await getDB()
-  const { results } = await db.prepare(
-    'SELECT title, excerpt, category, author_display_name, published_at, featured_image_url FROM posts WHERE slug = ?'
-  ).bind(slug).all()
+  let results = []
+  try {
+    const res = await db.prepare(
+      'SELECT title, excerpt, category, author_display_name, published_at, featured_image_url FROM posts WHERE slug = ?'
+    ).bind(slug).all()
+    results = res.results || []
+  } catch (e) {
+    console.warn("Metadata: DB not ready at build time:", e.message)
+  }
   const post = results?.[0]
 
   if (!post) return { title: 'Post Not Found' }
@@ -59,9 +65,15 @@ export default async function PostPage({ params }) {
   const { slug } = await params
 
   const db = await getDB()
-  const { results: postResults } = await db.prepare(
-    "SELECT * FROM posts WHERE slug = ? AND status = 'published'"
-  ).bind(slug).all()
+  let postResults = []
+  try {
+    const res = await db.prepare(
+      "SELECT * FROM posts WHERE slug = ? AND status = 'published'"
+    ).bind(slug).all()
+    postResults = res.results || []
+  } catch (e) {
+    console.warn("PostPage: DB not ready at build time:", e.message)
+  }
   const post = postResults?.[0]
 
   if (!post) notFound()
@@ -74,9 +86,15 @@ export default async function PostPage({ params }) {
   }
 
   // Get related posts
-  const { results: relatedPosts } = await db.prepare(
-    "SELECT * FROM posts WHERE category = ? AND status = 'published' AND id != ? ORDER BY published_at DESC LIMIT 3"
-  ).bind(post.category, post.id).all()
+  let relatedPosts = []
+  try {
+    const res = await db.prepare(
+      "SELECT * FROM posts WHERE category = ? AND status = 'published' AND id != ? ORDER BY published_at DESC LIMIT 3"
+    ).bind(post.category, post.id).all()
+    relatedPosts = res.results || []
+  } catch (e) {
+    console.warn("RelatedPosts: DB not ready at build time:", e.message)
+  }
 
   const cat = CATEGORY_CONFIG[post.category]
   const date = new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })

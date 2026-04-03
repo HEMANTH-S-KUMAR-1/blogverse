@@ -5,12 +5,17 @@ export const metadata = {
   description: 'Courses, webinars, and workshops from the BlogVerse community.',
 }
 
-export const revalidate = 60
 export const dynamic = 'force-dynamic'
 
 export default async function CoursesPage() {
   const db = await getDB()
-  const { results: webinars } = await db.prepare("SELECT * FROM webinars WHERE is_active = TRUE ORDER BY event_date ASC").all()
+  let webinars = []
+  try {
+    const result = await db.prepare("SELECT * FROM webinars WHERE is_active = TRUE ORDER BY event_date ASC").all()
+    webinars = result.results || []
+  } catch (e) {
+    console.warn("CoursesPage: DB not ready at build time:", e.message)
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

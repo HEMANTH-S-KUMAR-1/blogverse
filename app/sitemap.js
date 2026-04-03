@@ -1,15 +1,23 @@
 import { getDB, CATEGORY_CONFIG } from '@/lib/d1'
 
+export const dynamic = 'force-dynamic'
+
 export default async function sitemap() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.pages.dev'
   const db = await getDB()
   
   // 1. Fetch all published posts
-  const { results: posts } = await db.prepare(
-    "SELECT slug, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC"
-  ).all()
+  let posts = []
+  try {
+    const result = await db.prepare(
+      "SELECT slug, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC"
+    ).all()
+    posts = result.results || []
+  } catch (e) {
+    console.warn("Sitemap: DB not ready at build time:", e.message)
+  }
   
-  const postUrls = (posts || []).map((post) => ({
+  const postUrls = posts.map((post) => ({
     url: `${siteUrl}/post/${post.slug}`,
     lastModified: new Date(post.published_at),
     changeFrequency: 'monthly',

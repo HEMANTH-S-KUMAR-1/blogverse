@@ -4,7 +4,6 @@ import PostCard from '@/components/PostCard'
 import NewsletterForm from '@/components/NewsletterForm'
 import AffiliateBanner from '@/components/AffiliateBanner'
 
-export const revalidate = 60
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
@@ -25,7 +24,13 @@ export default async function CategoryPage({ params }) {
   const cat = CATEGORY_CONFIG[name]
 
   const db = await getDB()
-  const { results: posts } = await db.prepare("SELECT * FROM posts WHERE category = ? AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(name).all()
+  let posts = []
+  try {
+    const result = await db.prepare("SELECT * FROM posts WHERE category = ? AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(name).all()
+    posts = result.results || []
+  } catch (e) {
+    console.warn("CategoryPage: DB not ready at build time:", e.message)
+  }
 
   const categoryBgClasses = {
     health: 'from-emerald-500 to-emerald-700',
