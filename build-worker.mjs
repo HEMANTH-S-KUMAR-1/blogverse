@@ -30,17 +30,28 @@ if (result.status !== 0) {
   process.exit(result.status || 1);
 }
 
-// Patch: remove node:sqlite reference from handler.mjs before Wrangler bundles it
+// Patch: remove ALL node:sqlite references from handler.mjs before Wrangler bundles it
 const handlerPath = join(process.cwd(), '.open-next', 'server-functions', 'default', 'handler.mjs');
 if (existsSync(handlerPath)) {
   console.log('[OpenNext Fix] Patching node:sqlite out of handler.mjs...');
   let content = readFileSync(handlerPath, 'utf8');
+
+  // Pattern 1: lazy require map entry  "node:sqlite":()=>require("node:sqlite"),
   content = content.replace(/"node:sqlite"\s*:\s*\(\)\s*=>\s*require\("node:sqlite"\),?/g, '');
+
+  // Pattern 2: DatabaseSync=require("node:sqlite").DatabaseSync
+  content = content.replace(/DatabaseSync\s*=\s*require\("node:sqlite"\)\.DatabaseSync/g, 'DatabaseSync=undefined');
+
+  // Pattern 3: catch-all for any remaining node:sqlite require
+  content = content.replace(/require\("node:sqlite"\)/g, '(undefined)');
+
   writeFileSync(handlerPath, content, 'utf8');
   console.log('[OpenNext Fix] Patch applied.');
+} else {
+  console.log(`[OpenNext Fix] Note: handler.mjs not found at ${handlerPath}`);
 }
 
-// Rename worker.js to _worker.js for Cloudflare Pages
+// Post-build: Rename worker.js to _worker.js for Cloudflare Pages compatibility
 const outputDir = join(process.cwd(), '.open-next');
 const oldPath = join(outputDir, 'worker.js');
 const newPath = join(outputDir, '_worker.js');
@@ -49,5 +60,5 @@ if (existsSync(oldPath)) {
   console.log(`[OpenNext Fix] Renaming ${oldPath} to ${newPath}`);
   renameSync(oldPath, newPath);
 } else {
-  console.log(`[OpenNext Fix] Note: ${oldPath} not found.`);
+  console.log(`[OpenNext Fix] Note: ${oldPath} not found. It might have been already renamed or build failed.`);
 }
