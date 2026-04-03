@@ -12,7 +12,8 @@ export default function Navbar() {
 
   // Ensure hydration safety by only rendering theme-dependent parts on the client
   useEffect(() => {
-    setMounted(true)
+    const frame = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(frame)
   }, [])
 
   const isDark = mounted && (resolvedTheme === 'dark' || theme === 'dark')

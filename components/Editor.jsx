@@ -28,6 +28,7 @@ export default function Editor({ content, onUpdate }) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
+        link: false,
       }),
       Image.configure({
         HTMLAttributes: { class: 'rounded-lg my-6 w-full' },

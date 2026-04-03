@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { getAdminCommentsAction, hideCommentAction } from '@/app/actions'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -9,11 +9,7 @@ export default function AdminCommentsPage() {
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadComments()
-  }, [])
-
-  async function loadComments() {
+  const loadComments = useCallback(async () => {
     setLoading(true)
     const res = await getAdminCommentsAction()
     if (res.success) {
@@ -22,7 +18,12 @@ export default function AdminCommentsPage() {
       toast.error(res.error || 'Failed to load comments')
     }
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => loadComments())
+    return () => cancelAnimationFrame(frame)
+  }, [loadComments])
 
   async function handleHide(id) {
     const res = await hideCommentAction(id)
