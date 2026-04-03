@@ -46,3 +46,8 @@ next-env.d.ts
 .next/dev/cache/
 .next/dev/logs/
 .next/dev/trace
+
+.next/dev/cache/
+.next/dev/logs/
+.next/dev/trace
+.next/turbopack
