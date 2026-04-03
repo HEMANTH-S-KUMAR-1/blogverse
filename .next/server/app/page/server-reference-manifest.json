@@ -1,0 +1,29 @@
+{
+  "node": {
+    "40d84cd437d796a75158ca8c0b4214dd27d886653c": {
+      "workers": {
+        "app/page": {
+          "moduleId": 40838,
+          "async": false,
+          "exportedName": "subscribeNewsletter",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "subscribeNewsletter",
+      "filename": "app/actions.js"
+    },
+    "70a29c8dfd76c4f2ef0bdfcc612f7d93fffa4e0188": {
+      "workers": {
+        "app/page": {
+          "moduleId": 40838,
+          "async": false,
+          "exportedName": "trackAffiliateClick",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "trackAffiliateClick",
+      "filename": "app/actions.js"
+    }
+  },
+  "edge": {}
+}

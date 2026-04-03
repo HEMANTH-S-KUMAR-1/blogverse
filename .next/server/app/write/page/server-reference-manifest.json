@@ -1,0 +1,17 @@
+{
+  "node": {
+    "605f0fc2aeafd7aebccf6fb7a738331a6bb0147602": {
+      "workers": {
+        "app/write/page": {
+          "moduleId": 80363,
+          "async": false,
+          "exportedName": "createPost",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "createPost",
+      "filename": "app/actions.js"
+    }
+  },
+  "edge": {}
+}
