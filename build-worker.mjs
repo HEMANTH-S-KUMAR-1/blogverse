@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync, rmSync, statSync } from 'node:fs';
+import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const tmpDir = join(process.cwd(), '.tmp-build');
@@ -30,59 +30,35 @@ if (result.status !== 0) {
   process.exit(result.status || 1);
 }
 
-// Patch: remove ALL node:sqlite references from handler.mjs before Wrangler bundles it
 const handlerPath = join(process.cwd(), '.open-next', 'server-functions', 'default', 'handler.mjs');
 if (existsSync(handlerPath)) {
-  console.log('[OpenNext Fix] Patching node:sqlite out of handler.mjs...');
+  console.log('[OpenNext Fix] Patching handler.mjs...');
   let content = readFileSync(handlerPath, 'utf8');
+
+  const before = content.length;
+
+  // Fix node:sqlite
   content = content.replace(/"node:sqlite"\s*:\s*\(\)\s*=>\s*require\("node:sqlite"\),?/g, '');
   content = content.replace(/DatabaseSync\s*=\s*require\("node:sqlite"\)\.DatabaseSync/g, 'DatabaseSync=undefined');
   content = content.replace(/require\("node:sqlite"\)/g, '(undefined)');
+
+  // Remove large inlined base64 wasm blobs (yoga.wasm, resvg.wasm from @vercel/og)
+  content = content.replace(/var wasmBase64\s*=\s*"[A-Za-z0-9+/=]{1000,}"/g, 'var wasmBase64=""');
+  content = content.replace(/,wasmBase64\s*=\s*"[A-Za-z0-9+/=]{1000,}"/g, ',wasmBase64=""');
+
+  // Remove large inlined base64 font data
+  content = content.replace(/var\s+\w+\s*=\s*"(?:AAEAAAA|AAABA)[A-Za-z0-9+/=]{500,}"/g, (m) => m.split('=')[0] + '=""');
+
+  const after = content.length;
+  console.log(`[OpenNext Fix] Reduced handler.mjs from ${(before / 1024 / 1024).toFixed(2)}MB to ${(after / 1024 / 1024).toFixed(2)}MB`);
+
   writeFileSync(handlerPath, content, 'utf8');
   console.log('[OpenNext Fix] Patch applied.');
-
-  const sizeMB = (statSync(handlerPath).size / 1024 / 1024).toFixed(2);
-  console.log(`[OpenNext Fix] handler.mjs size: ${sizeMB} MB`);
 } else {
   console.log(`[OpenNext Fix] Note: handler.mjs not found at ${handlerPath}`);
 }
 
-// Log worker.js size
-const workerPath = join(process.cwd(), '.open-next', 'worker.js');
-if (existsSync(workerPath)) {
-  const sizeMB = (statSync(workerPath).size / 1024 / 1024).toFixed(2);
-  console.log(`[OpenNext Fix] worker.js size: ${sizeMB} MB`);
-}
-
-// Remove heavy unused assets
-const heavyPaths = [
-  // @vercel/og (image generation - not needed for blog)
-  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', '@vercel'),
-  // Sharp image processing
-  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'sharp'),
-  // Next.js swc binaries
-  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', 'babel-packages'),
-  // Next.js webpack runtime (not needed in CF workers)
-  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', 'webpack'),
-];
-
-for (const f of heavyPaths) {
-  if (existsSync(f)) {
-    const sizeMB = (statSync(f).size / 1024 / 1024).toFixed(2);
-    console.log(`[OpenNext Fix] Removing heavy asset (${sizeMB} MB): ${f}`);
-    rmSync(f, { recursive: true, force: true });
-  } else {
-    console.log(`[OpenNext Fix] Not found (skipping): ${f}`);
-  }
-}
-
-// Log final worker.js size after removals
-if (existsSync(workerPath)) {
-  const sizeMB = (statSync(workerPath).size / 1024 / 1024).toFixed(2);
-  console.log(`[OpenNext Fix] worker.js final size: ${sizeMB} MB`);
-}
-
-// Post-build: Rename worker.js to _worker.js for Cloudflare Pages compatibility
+// Post-build: Rename worker.js to _worker.js
 const outputDir = join(process.cwd(), '.open-next');
 const oldPath = join(outputDir, 'worker.js');
 const newPath = join(outputDir, '_worker.js');
@@ -91,5 +67,5 @@ if (existsSync(oldPath)) {
   console.log(`[OpenNext Fix] Renaming ${oldPath} to ${newPath}`);
   renameSync(oldPath, newPath);
 } else {
-  console.log(`[OpenNext Fix] Note: ${oldPath} not found. It might have been already renamed or build failed.`);
+  console.log(`[OpenNext Fix] Note: ${oldPath} not found.`);
 }
