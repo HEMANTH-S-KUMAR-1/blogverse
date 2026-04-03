@@ -1,7 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
-import { build } from 'esbuild';
 
 const tmpDir = join(process.cwd(), '.tmp-build');
 if (!existsSync(tmpDir)) {
@@ -31,23 +30,13 @@ if (result.status !== 0) {
   process.exit(result.status || 1);
 }
 
-// Post-build: Re-bundle worker.js with node:sqlite external, output as _worker.js
 const outputDir = join(process.cwd(), '.open-next');
-const workerJs = join(outputDir, 'worker.js');
-const workerFinal = join(outputDir, '_worker.js');
+const oldPath = join(outputDir, 'worker.js');
+const newPath = join(outputDir, '_worker.js');
 
-if (existsSync(workerJs)) {
-  console.log(`[OpenNext Fix] Re-bundling worker with node:sqlite as external...`);
-  await build({
-    entryPoints: [workerJs],
-    outfile: workerFinal,
-    bundle: true,
-    format: 'esm',
-    platform: 'browser',
-    external: ['node:sqlite', 'node:worker_threads'],
-    logLevel: 'info',
-  });
-  console.log(`[OpenNext Fix] Re-bundle complete: ${workerFinal}`);
+if (existsSync(oldPath)) {
+  console.log(`[OpenNext Fix] Renaming ${oldPath} to ${newPath}`);
+  renameSync(oldPath, newPath);
 } else {
-  console.log(`[OpenNext Fix] Note: ${workerJs} not found.`);
+  console.log(`[OpenNext Fix] Note: ${oldPath} not found.`);
 }

@@ -1,10 +1,9 @@
 name = "blogverse"
-compatibility_date = "2024-09-23"
+compatibility_date = "2025-03-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".open-next"
 
 [vars]
-# Runtime environment variables are set in the Cloudflare Pages dashboard
 
 [[d1_databases]]
 binding = "DB"
