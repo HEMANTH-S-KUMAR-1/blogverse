@@ -8,15 +8,22 @@ import AdSenseSlot from '@/components/AdSenseSlot'
 import Link from 'next/link'
 import CategoryFilter from '@/components/CategoryFilter'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const db = await getDB()
   
-  const [postsResult, featuredResult] = await Promise.all([
-    db.prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT 12").all(),
-    db.prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT 1").all()
-  ])
+  let postsResult = { results: [] }
+  let featuredResult = { results: [] }
+  
+  try {
+    [postsResult, featuredResult] = await Promise.all([
+      db.prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT 12").all(),
+      db.prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT 1").all()
+    ])
+  } catch (e) {
+    console.warn("DB not ready at build time:", e.message)
+  }
 
   const featured = featuredResult.results?.[0]
   const allPosts = postsResult.results || []
