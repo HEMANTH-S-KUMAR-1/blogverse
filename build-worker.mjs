@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const tmpDir = join(process.cwd(), '.tmp-build');
@@ -35,32 +35,51 @@ const handlerPath = join(process.cwd(), '.open-next', 'server-functions', 'defau
 if (existsSync(handlerPath)) {
   console.log('[OpenNext Fix] Patching node:sqlite out of handler.mjs...');
   let content = readFileSync(handlerPath, 'utf8');
-
-  // Pattern 1: lazy require map entry  "node:sqlite":()=>require("node:sqlite"),
   content = content.replace(/"node:sqlite"\s*:\s*\(\)\s*=>\s*require\("node:sqlite"\),?/g, '');
-
-  // Pattern 2: DatabaseSync=require("node:sqlite").DatabaseSync
   content = content.replace(/DatabaseSync\s*=\s*require\("node:sqlite"\)\.DatabaseSync/g, 'DatabaseSync=undefined');
-
-  // Pattern 3: catch-all for any remaining node:sqlite require
   content = content.replace(/require\("node:sqlite"\)/g, '(undefined)');
-
   writeFileSync(handlerPath, content, 'utf8');
   console.log('[OpenNext Fix] Patch applied.');
+
+  const sizeMB = (statSync(handlerPath).size / 1024 / 1024).toFixed(2);
+  console.log(`[OpenNext Fix] handler.mjs size: ${sizeMB} MB`);
 } else {
   console.log(`[OpenNext Fix] Note: handler.mjs not found at ${handlerPath}`);
 }
 
-// Remove heavy unused assets to reduce bundle size under 3MB free limit
+// Log worker.js size
+const workerPath = join(process.cwd(), '.open-next', 'worker.js');
+if (existsSync(workerPath)) {
+  const sizeMB = (statSync(workerPath).size / 1024 / 1024).toFixed(2);
+  console.log(`[OpenNext Fix] worker.js size: ${sizeMB} MB`);
+}
+
+// Remove heavy unused assets
 const heavyPaths = [
-  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', '@vercel', 'og'),
+  // @vercel/og (image generation - not needed for blog)
+  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', '@vercel'),
+  // Sharp image processing
+  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'sharp'),
+  // Next.js swc binaries
+  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', 'babel-packages'),
+  // Next.js webpack runtime (not needed in CF workers)
+  join(process.cwd(), '.open-next', 'server-functions', 'default', 'node_modules', 'next', 'dist', 'compiled', 'webpack'),
 ];
 
 for (const f of heavyPaths) {
   if (existsSync(f)) {
-    console.log(`[OpenNext Fix] Removing heavy asset: ${f}`);
+    const sizeMB = (statSync(f).size / 1024 / 1024).toFixed(2);
+    console.log(`[OpenNext Fix] Removing heavy asset (${sizeMB} MB): ${f}`);
     rmSync(f, { recursive: true, force: true });
+  } else {
+    console.log(`[OpenNext Fix] Not found (skipping): ${f}`);
   }
+}
+
+// Log final worker.js size after removals
+if (existsSync(workerPath)) {
+  const sizeMB = (statSync(workerPath).size / 1024 / 1024).toFixed(2);
+  console.log(`[OpenNext Fix] worker.js final size: ${sizeMB} MB`);
 }
 
 // Post-build: Rename worker.js to _worker.js for Cloudflare Pages compatibility
