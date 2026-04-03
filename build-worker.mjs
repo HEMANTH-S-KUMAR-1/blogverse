@@ -1,28 +1,22 @@
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
-
-/**
- * This script bypasses the Windows "ENOENT mkdtemp" bug in OpenNext 
- * by redirecting the temporary directory to a local, predictable path.
- */
+import { build } from 'esbuild';
 
 const tmpDir = join(process.cwd(), '.tmp-build');
 if (!existsSync(tmpDir)) {
   mkdirSync(tmpDir, { recursive: true });
 }
 
-// Override TEMP/TMP environment variables for the current process and its children
-const env = { 
-  ...process.env, 
-  TEMP: tmpDir, 
-  TMP: tmpDir 
+const env = {
+  ...process.env,
+  TEMP: tmpDir,
+  TMP: tmpDir
 };
 
 console.log(`[OpenNext Fix] Redirecting TEMP to local path: ${tmpDir}`);
 
-// Use the local binary to avoid npx resolution issues
-const binary = process.platform === 'win32' 
+const binary = process.platform === 'win32'
   ? join('node_modules', '.bin', 'opennextjs-cloudflare.cmd')
   : join('node_modules', '.bin', 'opennextjs-cloudflare');
 
@@ -37,14 +31,23 @@ if (result.status !== 0) {
   process.exit(result.status || 1);
 }
 
-// Post-build: Rename worker.js to _worker.js for Cloudflare Pages compatibility
+// Post-build: Re-bundle worker.js with node:sqlite external, output as _worker.js
 const outputDir = join(process.cwd(), '.open-next');
-const oldPath = join(outputDir, 'worker.js');
-const newPath = join(outputDir, '_worker.js');
+const workerJs = join(outputDir, 'worker.js');
+const workerFinal = join(outputDir, '_worker.js');
 
-if (existsSync(oldPath)) {
-  console.log(`[OpenNext Fix] Renaming ${oldPath} to ${newPath}`);
-  renameSync(oldPath, newPath);
+if (existsSync(workerJs)) {
+  console.log(`[OpenNext Fix] Re-bundling worker with node:sqlite as external...`);
+  await build({
+    entryPoints: [workerJs],
+    outfile: workerFinal,
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    external: ['node:sqlite', 'node:worker_threads'],
+    logLevel: 'info',
+  });
+  console.log(`[OpenNext Fix] Re-bundle complete: ${workerFinal}`);
 } else {
-  console.log(`[OpenNext Fix] Note: ${oldPath} not found. It might have been already renamed or build failed.`);
+  console.log(`[OpenNext Fix] Note: ${workerJs} not found.`);
 }
