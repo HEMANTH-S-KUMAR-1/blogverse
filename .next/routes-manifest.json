@@ -23,14 +23,6 @@
   },
   "dynamicRoutes": [
     {
-      "page": "/api/assets/[filename]",
-      "regex": "^/api/assets/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPfilename": "nxtPfilename"
-      },
-      "namedRegex": "^/api/assets/(?<nxtPfilename>[^/]+?)(?:/)?$"
-    },
-    {
       "page": "/category/[name]",
       "regex": "^/category/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -99,12 +91,6 @@
       "regex": "^/advertise(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/advertise(?:/)?$"
-    },
-    {
-      "page": "/api/upload",
-      "regex": "^/api/upload(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/upload(?:/)?$"
     },
     {
       "page": "/courses",

@@ -35,6 +35,18 @@
       },
       "exportedName": "deactivateJobAction",
       "filename": "app/actions.js"
+    },
+    "4037fd8880cd3410b8c567c4dee266502fd95c1611": {
+      "workers": {
+        "app/admin/add-job/page": {
+          "moduleId": 79685,
+          "async": false,
+          "exportedName": "adminLoginAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "adminLoginAction",
+      "filename": "app/actions.js"
     }
   },
   "edge": {}

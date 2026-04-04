@@ -1,4 +1,5 @@
-import { safeImageUrl, getDB } from '@/lib/d1'
+import { safeImageUrl } from '@/lib/d1'
+import { supabase } from '@/lib/supabase'
 import PostCard from '@/components/PostCard'
 import TipButton from '@/components/TipButton'
 
@@ -8,7 +9,7 @@ export async function generateMetadata({ params }) {
   const { username } = await params
   const decodedName = decodeURIComponent(username)
   return {
-    title: `${decodedName} — BlogVerse`,
+    title: `${decodedName} – BlogVerse`,
     description: `Read posts by ${decodedName} on BlogVerse.`,
   }
 }
@@ -17,17 +18,23 @@ export default async function WriterPage({ params }) {
   const { username } = await params
   const decodedName = decodeURIComponent(username)
 
-  const db = await getDB()
   let posts = []
   try {
-    const result = await db.prepare("SELECT * FROM posts WHERE author_display_name = ? AND identity_mode IN ('pseudonym', 'public') AND status = 'published' ORDER BY published_at DESC LIMIT 24").bind(decodedName).all()
-    posts = result.results || []
+    const { data } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('author_display_name', decodedName)
+      .in('identity_mode', ['pseudonym', 'public'])
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(24)
+    posts = data || []
   } catch (e) {
-    console.warn("WriterPage: DB not ready at build time:", e.message)
+    console.warn('WriterPage: DB error:', e.message)
   }
 
-  const totalViews = posts?.reduce((sum, p) => sum + (p.views || 0), 0) || 0
-  const latestPost = posts?.[0]
+  const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0)
+  const latestPost = posts[0]
   const bio = latestPost?.author_bio
   const avatarUrl = latestPost?.author_avatar_url || null
   const upiId = latestPost?.author_upi_id
@@ -36,14 +43,14 @@ export default async function WriterPage({ params }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Profile Header */}
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-linear-to-br from-gray-50 to-emerald-50/30 dark:from-gray-900 dark:to-emerald-950/20  p-8 mb-8">
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-emerald-50/30 dark:from-gray-900 dark:to-emerald-950/20 p-8 mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             {safeImageUrl(avatarUrl) ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={safeImageUrl(avatarUrl)} alt={decodedName} className="w-16 h-16 rounded-full object-cover" />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-linear-to-br from-emerald-400 to-teal-500  flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-2xl font-bold">
                 {decodedName[0].toUpperCase()}
               </div>
             )}
@@ -52,7 +59,7 @@ export default async function WriterPage({ params }) {
               {bio && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{bio}</p>}
               <div className="flex gap-4 mt-2">
                 <span className="text-sm">
-                  <strong className="text-gray-900 dark:text-white">{posts?.length || 0}</strong>
+                  <strong className="text-gray-900 dark:text-white">{posts.length}</strong>
                   <span className="text-gray-400 ml-1">posts</span>
                 </span>
                 <span className="text-sm">
@@ -71,11 +78,9 @@ export default async function WriterPage({ params }) {
       </div>
 
       {/* Posts */}
-      {posts && posts.length > 0 ? (
+      {posts.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map(post => (
-            <PostCard key={post.id} post={post} />
-          ))}
+          {posts.map(post => <PostCard key={post.id} post={post} />)}
         </div>
       ) : (
         <div className="text-center py-16 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">

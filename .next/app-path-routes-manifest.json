@@ -4,8 +4,6 @@
   "/admin/add-job/page": "/admin/add-job",
   "/admin/comments/page": "/admin/comments",
   "/advertise/page": "/advertise",
-  "/api/assets/[filename]/route": "/api/assets/[filename]",
-  "/api/upload/route": "/api/upload",
   "/category/[name]/page": "/category/[name]",
   "/courses/page": "/courses",
   "/edit/[slug]/page": "/edit/[slug]",

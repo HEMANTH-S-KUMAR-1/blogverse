@@ -144,6 +144,30 @@
       "filename": "app/actions.js",
       "exportedName": "deactivateJobAction"
     },
+    "4037fd8880cd3410b8c567c4dee266502fd95c1611": {
+      "workers": {
+        "app/admin/add-job/page": {
+          "moduleId": 79685,
+          "async": false,
+          "exportedName": "adminLoginAction",
+          "filename": "app/actions.js"
+        },
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "adminLoginAction",
+          "filename": "app/actions.js"
+        },
+        "app/products/page": {
+          "moduleId": 29475,
+          "async": false,
+          "exportedName": "adminLoginAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "filename": "app/actions.js",
+      "exportedName": "adminLoginAction"
+    },
     "00776857f7c03fcb390bd33c4e46b6dfb26961e4ab": {
       "workers": {
         "app/admin/comments/page": {
@@ -257,24 +281,6 @@
       },
       "filename": "app/actions.js",
       "exportedName": "getProducts"
-    },
-    "4037fd8880cd3410b8c567c4dee266502fd95c1611": {
-      "workers": {
-        "app/jobs/page": {
-          "moduleId": 27427,
-          "async": false,
-          "exportedName": "adminLoginAction",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "adminLoginAction",
-          "filename": "app/actions.js"
-        }
-      },
-      "filename": "app/actions.js",
-      "exportedName": "adminLoginAction"
     },
     "40771f19ceb841181ff359d696e4918fd0bca89df9": {
       "workers": {

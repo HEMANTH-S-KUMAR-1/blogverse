@@ -1,91 +1,86 @@
-import { getDB } from '@/lib/d1'
-
-export const metadata = {
-  title: 'Learn & Grow — BlogVerse',
-  description: 'Courses, webinars, and workshops from the BlogVerse community.',
-}
+import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'All Courses – BlogVerse Academy',
+  description: 'Explore our latest courses on tech, finance, health, and more.',
+}
+
 export default async function CoursesPage() {
-  const db = await getDB()
-  let webinars = []
+  let courses = []
+
   try {
-    const result = await db.prepare("SELECT * FROM webinars WHERE is_active = TRUE ORDER BY event_date ASC").all()
-    webinars = result.results || []
+    const { data } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+    courses = data || []
   } catch (e) {
-    console.warn("CoursesPage: DB not ready at build time:", e.message)
+    console.warn('CoursesPage: DB error:', e.message)
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Learn & Grow</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Courses, webinars, and workshops from our community</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
+        <div className="max-w-xl text-center md:text-left">
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
+            Learn something <span className="text-emerald-500">amazing</span> today.
+          </h1>
+          <p className="text-xl text-gray-400">
+            Professional courses curated by experts to help you master new skills.
+          </p>
+        </div>
+        <div className="relative w-full max-w-sm aspect-square bg-emerald-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center p-8">
+          <div className="absolute inset-0 bg-emerald-500/10 blur-3xl rounded-full" />
+          <span className="text-8xl">🎓</span>
+        </div>
       </div>
 
-      {webinars && webinars.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {webinars.map(w => {
-            const isPast = new Date(w.event_date) < new Date()
-            const date = new Date(w.event_date).toLocaleDateString('en-IN', {
-              day: 'numeric', month: 'long', year: 'numeric',
-            })
-            const time = new Date(w.event_date).toLocaleTimeString('en-IN', {
-              hour: '2-digit', minute: '2-digit',
-            })
-
-            return (
-              <div key={w.id} className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-2xl">🎓</span>
-                    {isPast ? (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                        Completed
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        Upcoming
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{w.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{w.description}</p>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-                    <span>📅 {date}</span>
-                    <span>🕐 {time}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className={`text-lg font-bold ${w.price === 'Free' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
-                      {w.price}
-                    </span>
-                    {isPast ? (
-                      <span className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 text-sm cursor-not-allowed">
-                        Event Ended
-                      </span>
-                    ) : (
-                      <a
-                        href={w.google_form_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-linear-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white text-sm font-medium transition-all "
-                      >
-                        Register Now
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                      </a>
-                    )}
-                  </div>
+      {courses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {courses.map(course => (
+            <div key={course.id} className="group flex flex-col bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-2xl transition-all duration-300">
+              <div className="aspect-[16/9] relative bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                {course.thumbnail_url ? (
+                  <Image src={course.thumbnail_url} alt={course.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-4xl">📚</div>
+                )}
+                <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 backdrop-blur text-xs font-bold text-gray-900 shadow-sm uppercase tracking-widest">
+                  {course.category || 'Course'}
                 </div>
               </div>
-            )
-          })}
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-emerald-500 transition-colors">
+                  {course.title}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-6 flex-1">
+                  {course.description}
+                </p>
+                <div className="flex items-center justify-between mt-auto">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Price</span>
+                    <span className="text-xl font-black text-gray-900 dark:text-white">
+                      {course.is_free ? 'FREE' : `₹ ${course.price}`}
+                    </span>
+                  </div>
+                  <Link href={`/courses/${course.slug}`} className="inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black font-bold text-sm hover:scale-105 transition-transform active:scale-95">
+                    Start Learning
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
-        <div className="text-center py-16 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
-          <p className="text-gray-400 text-lg">No upcoming webinars. Check back soon!</p>
+        <div className="py-20 text-center rounded-3xl bg-gray-50 dark:bg-gray-900/50 border-2 border-dashed border-gray-200 dark:border-gray-800">
+          <div className="text-4xl mb-4">✨</div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">New courses coming soon</h3>
+          <p className="text-gray-500 max-w-sm mx-auto">We're currently crafting high-quality learning experiences for you.</p>
         </div>
       )}
     </div>

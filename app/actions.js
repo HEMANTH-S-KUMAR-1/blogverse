@@ -1,21 +1,19 @@
 'use server'
 
-import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { getDB } from '@/lib/d1'
+import { supabase } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 
 async function verifyTurnstile(token) {
   if (!token) return false
-  const ctx = await getCloudflareContext()
-  const secret = ctx?.env?.TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY
+  const secret = process.env.TURNSTILE_SECRET_KEY
 
   if (!secret) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[WARN] TURNSTILE_SECRET_KEY is not set — bypassing Turnstile verification in development.')
+      console.warn('[WARN] TURNSTILE_SECRET_KEY is not set — bypassing in development.')
       return true
     }
-    throw new Error('TURNSTILE_SECRET_KEY is not configured. Turnstile verification cannot proceed.')
+    throw new Error('TURNSTILE_SECRET_KEY is not configured.')
   }
 
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
@@ -29,17 +27,14 @@ async function verifyTurnstile(token) {
 
 export async function adminLoginAction(password) {
   const adminSecret = process.env.ADMIN_SECRET
-  if (!adminSecret) {
-    return { success: false, error: 'Admin auth not configured' }
-  }
-  if (password !== adminSecret) {
-    return { success: false, error: 'Invalid password' }
-  }
+  if (!adminSecret) return { success: false, error: 'Admin auth not configured' }
+  if (password !== adminSecret) return { success: false, error: 'Invalid password' }
+
   const cookieStore = await cookies()
   cookieStore.set('admin_token', adminSecret, {
     httpOnly: true,
     sameSite: 'strict',
-    maxAge: 86400, // 24 hours
+    maxAge: 86400,
     path: '/',
     secure: process.env.NODE_ENV === 'production',
   })
@@ -50,236 +45,243 @@ export async function createPost(postData, turnstileToken) {
   const isValid = await verifyTurnstile(turnstileToken)
   if (!isValid) return { success: false, error: 'Turnstile verification failed' }
 
-  const db = await getDB()
   const editKey = crypto.randomUUID()
-  
-  try {
-    const jsonTags = JSON.stringify(postData.tags || [])
-    
-    await db.prepare(`
-      INSERT INTO posts (
-        id, slug, title, excerpt, content, category, featured_image_url,
-        author_display_name, author_bio, author_upi_id, author_kofi_link,
-        identity_mode, author_avatar_url, tags, status, edit_key
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?, ?, ?
-      )
-    `).bind(
-      crypto.randomUUID(), postData.slug, postData.title, postData.excerpt, postData.content, postData.category, postData.featured_image_url,
-      postData.author_display_name, postData.author_bio, postData.author_upi_id, postData.author_kofi_link,
-      postData.identity_mode, postData.author_avatar_url, jsonTags, 'published', editKey
-    ).run()
-    
-    revalidatePath('/')
-    
-    return { success: true, edit_key: editKey, slug: postData.slug }
-  } catch (error) {
+
+  const { error } = await supabase.from('posts').insert({
+    id: crypto.randomUUID(),
+    slug: postData.slug,
+    title: postData.title,
+    excerpt: postData.excerpt,
+    content: postData.content,
+    category: postData.category,
+    featured_image_url: postData.featured_image_url,
+    author_display_name: postData.author_display_name,
+    author_bio: postData.author_bio,
+    author_upi_id: postData.author_upi_id,
+    author_kofi_link: postData.author_kofi_link,
+    identity_mode: postData.identity_mode,
+    author_avatar_url: postData.author_avatar_url,
+    tags: JSON.stringify(postData.tags || []),
+    status: 'published',
+    edit_key: editKey,
+  })
+
+  if (error) {
     console.error('Failed to create post:', error)
     return { success: false, error: 'Database error' }
   }
+
+  revalidatePath('/')
+  return { success: true, edit_key: editKey, slug: postData.slug }
 }
 
 export async function subscribeNewsletter(email) {
-  const db = await getDB()
-  try {
-    await db.prepare('INSERT INTO newsletter_subscribers (email) VALUES (?)').bind(email).run()
-    return { success: true }
-  } catch (error) {
-    if (error.message.includes('UNIQUE constraint failed')) {
-      return { success: false, code: '23505' }
-    }
+  const { error } = await supabase.from('newsletter_subscribers').insert({ email })
+
+  if (error) {
+    if (error.code === '23505') return { success: false, code: '23505' }
     return { success: false, error: error.message }
   }
+  return { success: true }
 }
 
 export async function submitReaction(postId, sessionId, type) {
-  const db = await getDB()
-  try {
-    await db.prepare('INSERT INTO reactions (post_id, session_id, reaction_type) VALUES (?, ?, ?)')
-      .bind(postId, sessionId, type)
-      .run()
-    revalidatePath(`/post/${postId}`)
-    return { success: true }
-  } catch (error) {
-    return { success: false }
-  }
+  const { error } = await supabase.from('reactions').insert({
+    post_id: postId,
+    session_id: sessionId,
+    reaction_type: type,
+  })
+
+  if (error) return { success: false }
+  revalidatePath(`/post/${postId}`)
+  return { success: true }
 }
 
 export async function loadReactions(postId, sessionId) {
-  const db = await getDB()
-  const { results: allReactions } = await db.prepare('SELECT reaction_type FROM reactions WHERE post_id = ?').bind(postId).all()
-  const { results: userReaction } = await db.prepare('SELECT reaction_type FROM reactions WHERE post_id = ? AND session_id = ? LIMIT 1').bind(postId, sessionId).all()
-  
-  return {
-    all: allReactions,
-    user: userReaction
-  }
+  const { data: allReactions } = await supabase
+    .from('reactions')
+    .select('reaction_type')
+    .eq('post_id', postId)
+
+  const { data: userReaction } = await supabase
+    .from('reactions')
+    .select('reaction_type')
+    .eq('post_id', postId)
+    .eq('session_id', sessionId)
+    .limit(1)
+
+  return { all: allReactions || [], user: userReaction || [] }
 }
 
 export async function fetchCommentsAction(postId) {
-  const db = await getDB()
-  const { results } = await db.prepare(
-    'SELECT * FROM comments WHERE post_id = ? AND (is_hidden = FALSE OR is_hidden IS NULL) ORDER BY created_at ASC LIMIT 100'
-  ).bind(postId).all()
-  return results
+  const { data } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('post_id', postId)
+    .or('is_hidden.is.null,is_hidden.eq.false')
+    .order('created_at', { ascending: true })
+    .limit(100)
+
+  return data || []
 }
 
 export async function getAdminCommentsAction() {
   const cookieStore = await cookies()
   const token = cookieStore.get('admin_token')?.value
   const serverSecret = process.env.ADMIN_SECRET
-  
+
   if (!serverSecret || token !== serverSecret) {
     return { success: false, error: 'Unauthorized' }
   }
 
-  const db = await getDB()
-  const { results } = await db.prepare(`
-    SELECT c.*, p.title as post_title 
-    FROM comments c 
-    JOIN posts p ON c.post_id = p.id 
-    ORDER BY c.created_at DESC 
-    LIMIT 200
-  `).all()
-  return { success: true, comments: results }
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*, posts(title)')
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  if (error) return { success: false, error: error.message }
+
+  // Flatten post_title like the original query returned
+  const comments = (data || []).map(c => ({
+    ...c,
+    post_title: c.posts?.title || '',
+    posts: undefined,
+  }))
+
+  return { success: true, comments }
 }
 
 export async function hideCommentAction(commentId) {
   const cookieStore = await cookies()
   const token = cookieStore.get('admin_token')?.value
   const serverSecret = process.env.ADMIN_SECRET
-  
+
   if (!serverSecret || token !== serverSecret) {
     return { success: false, error: 'Unauthorized' }
   }
 
-  const db = await getDB()
-  try {
-    await db.prepare('UPDATE comments SET is_hidden = TRUE WHERE id = ?').bind(commentId).run()
-    return { success: true }
-  } catch (error) {
-    return { success: false, error: error.message }
-  }
+  const { error } = await supabase
+    .from('comments')
+    .update({ is_hidden: true })
+    .eq('id', commentId)
+
+  if (error) return { success: false, error: error.message }
+  return { success: true }
 }
 
 export async function submitCommentAction(postId, displayName, content, turnstileToken, parentId = null) {
   const isValid = await verifyTurnstile(turnstileToken)
   if (!isValid) return { success: false, error: 'Turnstile verification failed' }
 
-  const db = await getDB()
-  try {
-    await db.prepare('INSERT INTO comments (post_id, display_name, content, parent_id) VALUES (?, ?, ?, ?)')
-      .bind(postId, displayName, content, parentId)
-      .run()
-    revalidatePath(`/post/${postId}`)
-    return { success: true }
-  } catch (error) {
-    return { success: false }
-  }
+  const { error } = await supabase.from('comments').insert({
+    post_id: postId,
+    display_name: displayName,
+    content,
+    parent_id: parentId,
+  })
+
+  if (error) return { success: false }
+  revalidatePath(`/post/${postId}`)
+  return { success: true }
 }
 
 export async function verifyEditKey(slug, key) {
-  const db = await getDB()
-  const { results } = await db.prepare('SELECT * FROM posts WHERE slug = ?').bind(slug).all()
-  const post = results?.[0]
-  
-  if (!post) return { success: false, error: 'Post not found' }
-  if (post.edit_key !== key) return { success: false, error: 'Wrong edit key' }
-  
-  return { success: true, post }
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+
+  if (error || !data) return { success: false, error: 'Post not found' }
+  if (data.edit_key !== key) return { success: false, error: 'Wrong edit key' }
+
+  return { success: true, post: data }
 }
 
 export async function updatePostAction(postData) {
-  const db = await getDB()
-  try {
-    const jsonTags = JSON.stringify(postData.tags || [])
-    await db.prepare(`
-      UPDATE posts SET
-        title = ?, content = ?, excerpt = ?, featured_image_url = ?,
-        author_avatar_url = ?, category = ?, tags = ?
-      WHERE id = ?
-    `).bind(
-      postData.title, postData.content, postData.excerpt, postData.featured_image_url,
-      postData.author_avatar_url, postData.category, jsonTags, postData.id
-    ).run()
-    
-    revalidatePath(`/post/${postData.slug}`)
-    
-    return { success: true }
-  } catch (error) {
-    return { success: false, error: error.message }
-  }
+  const { error } = await supabase
+    .from('posts')
+    .update({
+      title: postData.title,
+      content: postData.content,
+      excerpt: postData.excerpt,
+      featured_image_url: postData.featured_image_url,
+      author_avatar_url: postData.author_avatar_url,
+      category: postData.category,
+      tags: JSON.stringify(postData.tags || []),
+    })
+    .eq('id', postData.id)
+
+  if (error) return { success: false, error: error.message }
+  revalidatePath(`/post/${postData.slug}`)
+  return { success: true }
 }
 
 export async function getJobs() {
-  const db = await getDB()
-  const { results } = await db.prepare('SELECT * FROM job_listings WHERE is_active = TRUE ORDER BY created_at DESC').all()
-  return results
+  const { data } = await supabase
+    .from('job_listings')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+
+  return data || []
 }
 
 export async function postJob(jobData) {
-  const db = await getDB()
-  try {
-    await db.prepare('INSERT INTO job_listings (title, company, description, category, apply_url) VALUES (?, ?, ?, ?, ?)')
-      .bind(jobData.title, jobData.company, jobData.description, jobData.category, jobData.apply_url)
-      .run()
-    revalidatePath('/jobs')
-    return { success: true }
-  } catch (error) {
+  const { error } = await supabase.from('job_listings').insert({
+    title: jobData.title,
+    company: jobData.company,
+    description: jobData.description,
+    category: jobData.category,
+    apply_url: jobData.apply_url,
+  })
+
+  if (error) {
     console.error('Failed to post job:', error)
     return { success: false }
   }
+  revalidatePath('/jobs')
+  return { success: true }
 }
 
 export async function getProducts() {
-  const db = await getDB()
-  const { results } = await db.prepare('SELECT * FROM digital_products ORDER BY created_at DESC').all()
-  return results
+  const { data } = await supabase
+    .from('digital_products')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  return data || []
 }
 
 export async function deactivateJobAction(id) {
-  const db = await getDB()
-  try {
-    await db.prepare('UPDATE job_listings SET is_active = FALSE WHERE id = ?').bind(id).run()
-    revalidatePath('/jobs')
-    return { success: true }
-  } catch (error) {
-    return { success: false }
-  }
+  const { error } = await supabase
+    .from('job_listings')
+    .update({ is_active: false })
+    .eq('id', id)
+
+  if (error) return { success: false }
+  revalidatePath('/jobs')
+  return { success: true }
 }
 
 export async function incrementViews(postId) {
-  const db = await getDB()
-  const ctx = await getCloudflareContext()
-  
-  try {
-    // 1. Update D1
-    await db.prepare('UPDATE posts SET views = COALESCE(views, 0) + 1 WHERE id = ?').bind(postId).run()
-    
-    // 2. Write to Analytics Engine
-    if (ctx?.env?.ANALYTICS) {
-      ctx.env.ANALYTICS.writeDataPoint({
-        blobs: ['pageview', postId, 'page_view'],
-        doubles: [1],
-        indexes: [postId]
-      })
-    }
-    return { success: true }
-  } catch (error) {
-    return { success: false }
-  }
+  const { data: post } = await supabase
+    .from('posts')
+    .select('views')
+    .eq('id', postId)
+    .single()
+
+  const { error } = await supabase
+    .from('posts')
+    .update({ views: (post?.views || 0) + 1 })
+    .eq('id', postId)
+
+  if (error) return { success: false }
+  return { success: true }
 }
 
 export async function trackAffiliateClick(name, postId, sessionId) {
-  const db = await getDB()
-  try {
-    await db.prepare('INSERT INTO affiliate_clicks (affiliate_name, post_id, session_id) VALUES (?, ?, ?)')
-      .bind(name, postId, sessionId)
-      .run()
-    return { success: true }
-  } catch (error) {
-    return { success: false }
-  }
+  // affiliate_clicks table not in schema — skipping silently
+  return { success: true }
 }

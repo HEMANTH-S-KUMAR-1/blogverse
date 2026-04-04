@@ -1,0 +1,3 @@
+module.exports=[50640,(a,b,c)=>{"use strict";Object.defineProperty(c,"__esModule",{value:!0}),Object.defineProperty(c,"InvariantError",{enumerable:!0,get:function(){return d}});class d extends Error{constructor(a,b){super(`Invariant: ${a.endsWith(".")?a:a+"."} This is a bug in Next.js.`,b),this.name="InvariantError"}}},79685,a=>{"use strict";var b=a.i(47338);a.s([],67977),a.i(67977),a.s(["00a2430ac6fd27f8814bd27a8161ffa4c305d28cc8",()=>b.getJobs,"4037fd8880cd3410b8c567c4dee266502fd95c1611",()=>b.adminLoginAction,"40dae6a33c17fd1b80bf9975dc2e105c19c42f820b",()=>b.deactivateJobAction,"40e28c6f2a9d88b0914df0c2cfa56683f81332649f",()=>b.postJob],79685)}];
+
+//# sourceMappingURL=_0wjylnv._.js.map
