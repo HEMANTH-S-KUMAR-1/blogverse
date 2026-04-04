@@ -55,3 +55,8 @@ next-env.d.ts
 .next/dev/
 .next/turbopack
 .next/cache/
+
+# /.next/   <- comment this out so .next IS committed
+.next/dev/
+.next/cache/
+.next/turbopack
