@@ -1,8 +1,0 @@
-User-Agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /_next/
-Disallow: /edit/
-
-Sitemap: https://blogverse-three-iota.vercel.app/sitemap.xml
