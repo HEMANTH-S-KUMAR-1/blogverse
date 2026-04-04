@@ -13,6 +13,7 @@
   "/post/[slug]/page": "app/post/[slug]/page.js",
   "/products/page": "app/products/page.js",
   "/robots.txt/route": "app/robots.txt/route.js",
+  "/search/page": "app/search/page.js",
   "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/support/page": "app/support/page.js",
   "/write/page": "app/write/page.js",

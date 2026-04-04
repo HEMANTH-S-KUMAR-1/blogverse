@@ -32,7 +32,8 @@ export default async function sitemap() {
     priority: 0.5,
   }))
 
-  const staticPages = ['', '/jobs', '/products', '/courses', '/write', '/advertise', '/support'].map((path) => ({
+  // FIX: added /search to static pages
+  const staticPages = ['', '/search', '/jobs', '/products', '/courses', '/write', '/advertise', '/support'].map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: new Date(),
     changeFrequency: 'daily',

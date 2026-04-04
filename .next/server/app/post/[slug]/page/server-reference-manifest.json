@@ -60,19 +60,7 @@
       "exportedName": "subscribeNewsletter",
       "filename": "app/actions.js"
     },
-    "70a29c8dfd76c4f2ef0bdfcc612f7d93fffa4e0188": {
-      "workers": {
-        "app/post/[slug]/page": {
-          "moduleId": 25645,
-          "async": false,
-          "exportedName": "trackAffiliateClick",
-          "filename": "app/actions.js"
-        }
-      },
-      "exportedName": "trackAffiliateClick",
-      "filename": "app/actions.js"
-    },
-    "40903401abb14bcc375c4802a5efd12173f18b4d56": {
+    "60903401abb14bcc375c4802a5efd12173f18b4d56": {
       "workers": {
         "app/post/[slug]/page": {
           "moduleId": 25645,

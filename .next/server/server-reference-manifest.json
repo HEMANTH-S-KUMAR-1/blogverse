@@ -25,52 +25,10 @@
           "async": false,
           "exportedName": "subscribeNewsletter",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "subscribeNewsletter",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
       "exportedName": "subscribeNewsletter"
-    },
-    "70a29c8dfd76c4f2ef0bdfcc612f7d93fffa4e0188": {
-      "workers": {
-        "app/category/[name]/page": {
-          "moduleId": 86354,
-          "async": false,
-          "exportedName": "trackAffiliateClick",
-          "filename": "app/actions.js"
-        },
-        "app/jobs/page": {
-          "moduleId": 27427,
-          "async": false,
-          "exportedName": "trackAffiliateClick",
-          "filename": "app/actions.js"
-        },
-        "app/page": {
-          "moduleId": 40838,
-          "async": false,
-          "exportedName": "trackAffiliateClick",
-          "filename": "app/actions.js"
-        },
-        "app/post/[slug]/page": {
-          "moduleId": 25645,
-          "async": false,
-          "exportedName": "trackAffiliateClick",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "trackAffiliateClick",
-          "filename": "app/actions.js"
-        }
-      },
-      "filename": "app/actions.js",
-      "exportedName": "trackAffiliateClick"
     },
     "00a2430ac6fd27f8814bd27a8161ffa4c305d28cc8": {
       "workers": {
@@ -82,12 +40,6 @@
         },
         "app/jobs/page": {
           "moduleId": 27427,
-          "async": false,
-          "exportedName": "getJobs",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
           "async": false,
           "exportedName": "getJobs",
           "filename": "app/actions.js"
@@ -109,12 +61,6 @@
           "async": false,
           "exportedName": "postJob",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "postJob",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
@@ -130,12 +76,6 @@
         },
         "app/jobs/page": {
           "moduleId": 27427,
-          "async": false,
-          "exportedName": "deactivateJobAction",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
           "async": false,
           "exportedName": "deactivateJobAction",
           "filename": "app/actions.js"
@@ -157,12 +97,6 @@
           "async": false,
           "exportedName": "adminLoginAction",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "adminLoginAction",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
@@ -178,12 +112,6 @@
         },
         "app/jobs/page": {
           "moduleId": 27427,
-          "async": false,
-          "exportedName": "getAdminCommentsAction",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
           "async": false,
           "exportedName": "getAdminCommentsAction",
           "filename": "app/actions.js"
@@ -205,12 +133,6 @@
           "async": false,
           "exportedName": "hideCommentAction",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "hideCommentAction",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
@@ -226,12 +148,6 @@
         },
         "app/jobs/page": {
           "moduleId": 27427,
-          "async": false,
-          "exportedName": "verifyEditKey",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
           "async": false,
           "exportedName": "verifyEditKey",
           "filename": "app/actions.js"
@@ -253,12 +169,6 @@
           "async": false,
           "exportedName": "updatePostAction",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "updatePostAction",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
@@ -271,16 +181,28 @@
           "async": false,
           "exportedName": "getProducts",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "getProducts",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
       "exportedName": "getProducts"
+    },
+    "406863fd5d982cd521fc875bd970072165d62ed3fc": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "searchPostsAction",
+          "filename": "app/actions.js"
+        },
+        "app/search/page": {
+          "moduleId": 43615,
+          "async": false,
+          "exportedName": "searchPostsAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "filename": "app/actions.js",
+      "exportedName": "searchPostsAction"
     },
     "40771f19ceb841181ff359d696e4918fd0bca89df9": {
       "workers": {
@@ -295,40 +217,10 @@
           "async": false,
           "exportedName": "fetchCommentsAction",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "fetchCommentsAction",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
       "exportedName": "fetchCommentsAction"
-    },
-    "40903401abb14bcc375c4802a5efd12173f18b4d56": {
-      "workers": {
-        "app/jobs/page": {
-          "moduleId": 27427,
-          "async": false,
-          "exportedName": "incrementViews",
-          "filename": "app/actions.js"
-        },
-        "app/post/[slug]/page": {
-          "moduleId": 25645,
-          "async": false,
-          "exportedName": "incrementViews",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "incrementViews",
-          "filename": "app/actions.js"
-        }
-      },
-      "filename": "app/actions.js",
-      "exportedName": "incrementViews"
     },
     "6026f8720a9b7bbfb0cc8c64c85b47cbf11e940b44": {
       "workers": {
@@ -340,12 +232,6 @@
         },
         "app/post/[slug]/page": {
           "moduleId": 25645,
-          "async": false,
-          "exportedName": "loadReactions",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
           "async": false,
           "exportedName": "loadReactions",
           "filename": "app/actions.js"
@@ -362,12 +248,6 @@
           "exportedName": "createPost",
           "filename": "app/actions.js"
         },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "createPost",
-          "filename": "app/actions.js"
-        },
         "app/write/page": {
           "moduleId": 80363,
           "async": false,
@@ -377,6 +257,36 @@
       },
       "filename": "app/actions.js",
       "exportedName": "createPost"
+    },
+    "606e46afca4563b63e547662dfb881a9b22d8482b5": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "deletePostAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "filename": "app/actions.js",
+      "exportedName": "deletePostAction"
+    },
+    "60903401abb14bcc375c4802a5efd12173f18b4d56": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "incrementViews",
+          "filename": "app/actions.js"
+        },
+        "app/post/[slug]/page": {
+          "moduleId": 25645,
+          "async": false,
+          "exportedName": "incrementViews",
+          "filename": "app/actions.js"
+        }
+      },
+      "filename": "app/actions.js",
+      "exportedName": "incrementViews"
     },
     "70061bf7f06cf9d932df28d62bd63f347535cffa77": {
       "workers": {
@@ -391,16 +301,22 @@
           "async": false,
           "exportedName": "submitReaction",
           "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
-          "async": false,
-          "exportedName": "submitReaction",
-          "filename": "app/actions.js"
         }
       },
       "filename": "app/actions.js",
       "exportedName": "submitReaction"
+    },
+    "70a29c8dfd76c4f2ef0bdfcc612f7d93fffa4e0188": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "trackAffiliateClick",
+          "filename": "app/actions.js"
+        }
+      },
+      "filename": "app/actions.js",
+      "exportedName": "trackAffiliateClick"
     },
     "7cae59c79daea67365313256c0709618c30e961190": {
       "workers": {
@@ -412,12 +328,6 @@
         },
         "app/post/[slug]/page": {
           "moduleId": 25645,
-          "async": false,
-          "exportedName": "submitCommentAction",
-          "filename": "app/actions.js"
-        },
-        "app/products/page": {
-          "moduleId": 29475,
           "async": false,
           "exportedName": "submitCommentAction",
           "filename": "app/actions.js"

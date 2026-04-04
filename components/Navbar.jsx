@@ -1,16 +1,17 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
-import { Sun, Moon, Plus, Menu, X } from 'lucide-react'
+import { Sun, Moon, Plus, Menu, X, Search } from 'lucide-react'
 
 export default function Navbar() {
   const { theme, resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const router = useRouter()
 
-  // Ensure hydration safety by only rendering theme-dependent parts on the client
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true))
     return () => cancelAnimationFrame(frame)
@@ -44,6 +45,16 @@ export default function Navbar() {
               Courses
             </Link>
 
+            {/* NEW – Search button */}
+            <Link
+              href="/search"
+              className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-900 hover:bg-gray-200 dark:hover:bg-zinc-800 transition-all active:scale-95 border border-transparent dark:border-zinc-800"
+              aria-label="Search"
+              id="search-btn"
+            >
+              <Search className="w-5 h-5 text-gray-600 dark:text-zinc-400" />
+            </Link>
+
             {/* Dark mode toggle */}
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
@@ -70,14 +81,23 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
-            id="mobile-menu-btn"
-          >
-            {menuOpen ? <X className="w-6 h-6 text-gray-600 dark:text-zinc-400" /> : <Menu className="w-6 h-6 text-gray-600 dark:text-zinc-400" />}
-          </button>
+          {/* Mobile: search + hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            <Link
+              href="/search"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5 text-gray-600 dark:text-zinc-400" />
+            </Link>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
+              id="mobile-menu-btn"
+            >
+              {menuOpen ? <X className="w-6 h-6 text-gray-600 dark:text-zinc-400" /> : <Menu className="w-6 h-6 text-gray-600 dark:text-zinc-400" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
@@ -86,7 +106,7 @@ export default function Navbar() {
             <Link href="/jobs" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Jobs</Link>
             <Link href="/products" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Products</Link>
             <Link href="/courses" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Courses</Link>
-            
+
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors"
@@ -103,7 +123,7 @@ export default function Navbar() {
                 </>
               )}
             </button>
-            
+
             <Link href="/write" className="flex items-center justify-center gap-2 px-3 py-3 rounded-lg bg-linear-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/20" onClick={() => setMenuOpen(false)}>
               <Plus className="w-5 h-5" />
               Write a Post

@@ -48,6 +48,18 @@
       "exportedName": "adminLoginAction",
       "filename": "app/actions.js"
     },
+    "406863fd5d982cd521fc875bd970072165d62ed3fc": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "searchPostsAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "searchPostsAction",
+      "filename": "app/actions.js"
+    },
     "40771f19ceb841181ff359d696e4918fd0bca89df9": {
       "workers": {
         "app/jobs/page": {
@@ -58,18 +70,6 @@
         }
       },
       "exportedName": "fetchCommentsAction",
-      "filename": "app/actions.js"
-    },
-    "40903401abb14bcc375c4802a5efd12173f18b4d56": {
-      "workers": {
-        "app/jobs/page": {
-          "moduleId": 27427,
-          "async": false,
-          "exportedName": "incrementViews",
-          "filename": "app/actions.js"
-        }
-      },
-      "exportedName": "incrementViews",
       "filename": "app/actions.js"
     },
     "40bac691fa9479798f0e25157b6eb957bffc9c89b7": {
@@ -156,6 +156,18 @@
       "exportedName": "createPost",
       "filename": "app/actions.js"
     },
+    "606e46afca4563b63e547662dfb881a9b22d8482b5": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "deletePostAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "deletePostAction",
+      "filename": "app/actions.js"
+    },
     "608034c448f2ffd3b3760509089ce5af8470157a10": {
       "workers": {
         "app/jobs/page": {
@@ -166,6 +178,18 @@
         }
       },
       "exportedName": "verifyEditKey",
+      "filename": "app/actions.js"
+    },
+    "60903401abb14bcc375c4802a5efd12173f18b4d56": {
+      "workers": {
+        "app/jobs/page": {
+          "moduleId": 27427,
+          "async": false,
+          "exportedName": "incrementViews",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "incrementViews",
       "filename": "app/actions.js"
     },
     "70061bf7f06cf9d932df28d62bd63f347535cffa77": {

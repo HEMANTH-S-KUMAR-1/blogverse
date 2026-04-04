@@ -13,6 +13,7 @@
   "/post/[slug]/page": "/post/[slug]",
   "/products/page": "/products",
   "/robots.txt/route": "/robots.txt",
+  "/search/page": "/search",
   "/sitemap.xml/route": "/sitemap.xml",
   "/support/page": "/support",
   "/write/page": "/write",

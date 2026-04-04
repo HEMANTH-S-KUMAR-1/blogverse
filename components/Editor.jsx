@@ -24,6 +24,13 @@ const MenuButton = ({ onClick, active, children, title }) => (
 )
 
 export default function Editor({ content, onUpdate }) {
+  // FIX: Track whether initial content was seeded to avoid re-seeding on every
+  // parent re-render. Without this guard, every keystroke causes the parent to
+  // call onUpdate → update state → pass new `content` prop → useEffect fires →
+  // editor.commands.setContent() resets cursor to the beginning (infinite loop /
+  // cursor-jump bug).
+  const initialised = useRef(false)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -41,6 +48,8 @@ export default function Editor({ content, onUpdate }) {
         placeholder: 'Start writing your story...',
       }),
     ],
+    // Seed initial content directly in useEditor so the editor is ready with
+    // content on first render — no useEffect needed for the initial load.
     content: content || '',
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
@@ -53,10 +62,16 @@ export default function Editor({ content, onUpdate }) {
     },
   })
 
+  // FIX: Only apply external content changes (e.g. loading a saved draft) if
+  // the editor already exists AND the content truly differs AND it's the first
+  // external injection (initialised guard). This prevents the cursor-jump loop.
   useEffect(() => {
-    if (editor && content && editor.getHTML() !== content) {
-      editor.commands.setContent(content)
-    }
+    if (!editor || !content) return
+    if (initialised.current) return          // ← guard: skip after first seed
+    if (editor.getHTML() === content) return // ← already in sync, nothing to do
+
+    editor.commands.setContent(content, false) // false = don't emit update event
+    initialised.current = true
   }, [content, editor])
 
   const [uploading, setUploading] = useState(false)
@@ -80,7 +95,7 @@ export default function Editor({ content, onUpdate }) {
         body: formData,
       })
       const data = await res.json()
-      
+
       if (res.ok && data.url) {
         editor.chain().focus().setImage({ src: data.url }).run()
         toast.success('Image uploaded!')
@@ -91,7 +106,6 @@ export default function Editor({ content, onUpdate }) {
       toast.error('Upload failed: ' + err.message)
     } finally {
       setUploading(false)
-      // Reset input
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -117,6 +131,10 @@ export default function Editor({ content, onUpdate }) {
     setShowLinkInput(false)
     setLinkUrl('')
   }
+
+  const charCount = editor.getText().length
+  const wordCount = editor.getText().split(/\s+/).filter(Boolean).length
+  const readMins = Math.max(1, Math.ceil(wordCount / 200))
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
@@ -149,10 +167,10 @@ export default function Editor({ content, onUpdate }) {
         <MenuButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
           ─
         </MenuButton>
-        <input 
-          type="file" 
-          accept="image/*" 
-          className="hidden" 
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
           ref={fileInputRef}
           onChange={handleUpload}
         />
@@ -163,7 +181,7 @@ export default function Editor({ content, onUpdate }) {
           <MenuButton onClick={toggleLink} active={editor.isActive('link')} title="Insert Link">
             🔗
           </MenuButton>
-          
+
           {showLinkInput && (
             <div className="absolute top-full left-0 mt-2 z-50 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl flex gap-2 min-w-[280px]">
               <input
@@ -178,7 +196,7 @@ export default function Editor({ content, onUpdate }) {
                 }}
                 className="flex-1 px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
-              <button 
+              <button
                 onClick={setLink}
                 className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded hover:bg-emerald-600"
               >
@@ -196,8 +214,8 @@ export default function Editor({ content, onUpdate }) {
 
       {/* Stats */}
       <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-xs text-gray-400">
-        <span>{editor.storage.characterCount?.characters?.() || editor.getText().length} characters</span>
-        <span>~{Math.max(1, Math.ceil(editor.getText().split(/\s+/).filter(Boolean).length / 200))} min read</span>
+        <span>{charCount} characters · {wordCount} words</span>
+        <span>~{readMins} min read</span>
       </div>
     </div>
   )
