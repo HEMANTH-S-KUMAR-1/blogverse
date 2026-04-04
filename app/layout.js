@@ -1,4 +1,4 @@
-import { Inter, Lora } from "next/font/google"
+ï»¿import { Inter, Lora } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import Navbar from "@/components/Navbar"
@@ -17,7 +17,7 @@ const lora = Lora({
 })
 
 export const metadata = {
-  title: "BlogVerse â€" Write, Share, Earn",
+  title: "BlogVerse - Write, Share, Earn",
   description: "A free community where anyone can write, share, and earn. No account needed. Start blogging today.",
   keywords: "blog, writing, community, free blogging platform, earn from writing",
 }
