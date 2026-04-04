@@ -1,16 +1,13 @@
 'use client'
-
+import Image from 'next/image'
 import toast from 'react-hot-toast'
-
 export default function SupportPage() {
   const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'your_upi_id_here'
   const kofiUsername = process.env.NEXT_PUBLIC_KOFI_USERNAME || 'your_kofi_username'
-
   const copyUpi = () => {
     navigator.clipboard.writeText(upiId)
     toast.success('UPI ID copied to clipboard!')
   }
-
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-12">
@@ -19,18 +16,18 @@ export default function SupportPage() {
           Your support keeps this platform free and ad-light
         </p>
       </div>
-
       {/* Support Card */}
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 text-center max-w-md mx-auto shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50">
-        {/* QR Code Placeholder */}
-        <div className="w-48 h-48 mx-auto rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6 border-2 border-dashed border-gray-300 dark:border-gray-600">
-          <div className="text-center">
-            <span className="text-4xl block mb-2">📱</span>
-            <p className="text-xs text-gray-400">UPI QR Code</p>
-            <p className="text-[10px] text-gray-300">Add image at<br />public/upi-qr.png</p>
-          </div>
+        {/* QR Code Image */}
+        <div className="w-48 h-48 mx-auto rounded-xl overflow-hidden mb-6">
+          <Image
+            src="/upi-qr.png"
+            alt="UPI QR Code"
+            width={192}
+            height={192}
+            className="w-full h-full object-contain"
+          />
         </div>
-
         {/* UPI ID */}
         <div className="mb-6">
           <p className="text-sm text-gray-500 mb-2">UPI ID</p>
@@ -42,24 +39,22 @@ export default function SupportPage() {
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
           </button>
         </div>
-
         {/* Ko-fi */}
-        <a
+        
           href={`https://ko-fi.com/${kofiUsername}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium transition-colors mb-4"
         >
-          ☕ Support on Ko-fi
+          ? Support on Ko-fi
         </a>
       </div>
-
       {/* Explanation */}
       <div className="mt-8 text-center max-w-lg mx-auto">
         <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
-          BlogVerse is free to use for everyone. We believe great writing should be accessible to all. 
-          Your generous support helps us keep the platform running, maintain minimal ads, and continue 
-          building features for the community. Every contribution, no matter how small, makes a difference. 💚
+          BlogVerse is free to use for everyone. We believe great writing should be accessible to all.
+          Your generous support helps us keep the platform running, maintain minimal ads, and continue
+          building features for the community. Every contribution, no matter how small, makes a difference. ??
         </p>
       </div>
     </div>
