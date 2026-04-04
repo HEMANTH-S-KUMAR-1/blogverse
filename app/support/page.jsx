@@ -19,40 +19,23 @@ export default function SupportPage() {
           Your support keeps this platform free and ad-light
         </p>
       </div>
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 text-center max-w-md mx-auto shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50">
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 text-center max-w-md mx-auto shadow-xl">
         <div className="w-48 h-48 mx-auto rounded-xl overflow-hidden mb-6">
-          <Image
-            src="/upi-qr.png"
-            alt="UPI QR Code"
-            width={192}
-            height={192}
-            className="w-full h-full object-contain"
-          />
+          <Image src="/upi-qr.png" alt="UPI QR Code" width={192} height={192} className="w-full h-full object-contain" />
         </div>
         <div className="mb-6">
           <p className="text-sm text-gray-500 mb-2">UPI ID</p>
-          <button
-            onClick={copyUpi}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          >
+          <button onClick={copyUpi} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             <span className="font-mono text-gray-900 dark:text-white">{upiId}</span>
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
           </button>
         </div>
-        
-          href={`https://ko-fi.com/${kofiUsername}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium transition-colors mb-4"
-        >
+        <a href={"https://ko-fi.com/" + kofiUsername} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium transition-colors mb-4">
           Support on Ko-fi
         </a>
       </div>
       <div className="mt-8 text-center max-w-lg mx-auto">
         <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
-          BlogVerse is free to use for everyone. We believe great writing should be accessible to all.
-          Your generous support helps us keep the platform running, maintain minimal ads, and continue
-          building features for the community. Every contribution, no matter how small, makes a difference.
+          BlogVerse is free to use for everyone. Your generous support helps us keep the platform running and continue building features for the community.
         </p>
       </div>
     </div>
