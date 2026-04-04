@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+// ✅ FIX: Added affiliate disclosure to footer (required by Indian law + good practice)
+
 export default function Footer() {
   return (
     <footer className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 mt-auto">
@@ -8,7 +10,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600  flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm">
                 B
               </div>
               <span className="text-lg font-bold bg-linear-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
@@ -26,8 +28,8 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link href="/write" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Write a Post</Link></li>
               <li><Link href="/jobs" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Jobs Board</Link></li>
-              <li><Link href="/products" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Digital Products</Link></li>
-              <li><Link href="/courses" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Courses & Webinars</Link></li>
+              <li><Link href="/products" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Recommended Tools</Link></li>
+              <li><Link href="/courses" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Courses & Learning</Link></li>
             </ul>
           </div>
 
@@ -66,7 +68,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
+        {/* ✅ NEW: Affiliate Disclosure */}
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-3">
+            <strong className="text-gray-500 dark:text-gray-400">Affiliate Disclosure:</strong>{' '}
+            Some links on BlogVerse are affiliate links. We may earn a small commission at no extra cost to you.
+            This helps us keep the platform free for everyone.
+          </p>
           <p className="text-sm text-gray-400 dark:text-gray-500 text-center">
             © {new Date().getFullYear()} BlogVerse. Built for the community, by the community.
           </p>

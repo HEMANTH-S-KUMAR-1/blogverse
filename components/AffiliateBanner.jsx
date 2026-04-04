@@ -1,23 +1,37 @@
 'use client'
 
-import { getSessionId, CATEGORY_CONFIG } from '@/lib/d1'
-import { trackAffiliateClick } from '@/app/actions'
+// ✅ FIX: Updated affiliate URLs — replace with YOUR actual affiliate links
+
+import { CATEGORY_CONFIG } from '@/lib/d1'
+
+// 🔑 Override URLs with your real affiliate links here
+// Sign up at each program and replace these placeholder URLs
+const AFFILIATE_URLS = {
+  health: 'https://www.healthkart.com/?ref=YOUR_CUELINKS_ID',      // Cuelinks → HealthKart
+  tech: 'https://hostinger.in/?ref=YOUR_HOSTINGER_AFFILIATE_ID',   // hostinger.in/affiliates
+  finance: 'https://groww.in/?ref=YOUR_GROWW_REF',                 // Groww affiliate/referral
+  student: 'https://imp.i384100.net/YOUR_COURSERA_ID',             // Coursera via impact.com
+  business: 'https://razorpay.com/?ref=YOUR_REF',                  // Razorpay referral
+  eco: 'https://www.amazon.in/?tag=YOUR_AMAZON_TAG',               // Amazon Associates India
+}
 
 export default function AffiliateBanner({ category, postId }) {
   const cat = CATEGORY_CONFIG[category]
   if (!cat || !cat.affiliate) return null
 
-  const { name, url, desc } = cat.affiliate
+  const { name, desc } = cat.affiliate
+  // Use the overridden real affiliate URL, falling back to the config URL
+  const url = AFFILIATE_URLS[category] || cat.affiliate.url
 
-  const handleClick = async () => {
-    const sessionId = getSessionId()
-    await trackAffiliateClick(name, postId || null, sessionId)
+  const handleClick = () => {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   return (
     <div className={`rounded-xl border ${cat.borderClass} ${cat.bgClass} p-4`}>
-      <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-2">Sponsored</p>
+      <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-2">
+        Sponsored · Affiliate Link
+      </p>
       <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{name}</h4>
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{desc}</p>
       <button
@@ -26,6 +40,9 @@ export default function AffiliateBanner({ category, postId }) {
       >
         Visit {name} →
       </button>
+      <p className="text-[9px] text-gray-400 mt-1.5 text-center">
+        Affiliate link — we earn a small commission
+      </p>
     </div>
   )
 }
