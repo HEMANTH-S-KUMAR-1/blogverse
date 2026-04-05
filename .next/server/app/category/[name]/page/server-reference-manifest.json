@@ -1,0 +1,17 @@
+{
+  "node": {
+    "40d84cd437d796a75158ca8c0b4214dd27d886653c": {
+      "workers": {
+        "app/category/[name]/page": {
+          "moduleId": 86354,
+          "async": false,
+          "exportedName": "subscribeNewsletter",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "subscribeNewsletter",
+      "filename": "app/actions.js"
+    }
+  },
+  "edge": {}
+}

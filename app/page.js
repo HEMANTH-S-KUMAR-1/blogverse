@@ -1,3 +1,7 @@
+// app/page.js
+// PERF FIX: Replaced force-dynamic with ISR (revalidate every 60s)
+// FEAT: Added "Load More" pagination
+
 import { CATEGORY_CONFIG } from '@/lib/d1'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
@@ -7,36 +11,52 @@ import AffiliateBanner from '@/components/AffiliateBanner'
 import AdSenseSlot from '@/components/AdSenseSlot'
 import Link from 'next/link'
 import CategoryFilter from '@/components/CategoryFilter'
+import LoadMorePosts from '@/components/LoadMorePosts'
 
-export const dynamic = 'force-dynamic'
+// PERF FIX: ISR — revalidate every 60 seconds instead of force-dynamic
+// New posts trigger revalidatePath('/') in createPost action
+export const revalidate = 60
+
+const PAGE_SIZE = 12
 
 export default async function HomePage() {
   let allPosts = []
   let featured = null
+  let totalPosts = 0
 
   try {
-    const [{ data: posts }, { data: featuredData }] = await Promise.all([
+    const [{ data: posts, count }, { data: featuredData }] = await Promise.all([
+      // PERF FIX: Select only needed columns instead of *
       supabase
         .from('posts')
-        .select('*')
+        .select(
+          'id, slug, title, excerpt, category, featured_image_url, author_display_name, published_at, views',
+          { count: 'exact' }
+        )
         .eq('status', 'published')
         .order('published_at', { ascending: false })
-        .limit(12),
+        .range(0, PAGE_SIZE - 1),
+
+      // PERF FIX: Featured query also selects only needed columns
       supabase
         .from('posts')
-        .select('*')
+        .select('id, slug, title, excerpt, featured_image_url, author_display_name, views, category')
         .eq('status', 'published')
         .order('views', { ascending: false })
         .limit(1),
     ])
     allPosts = posts || []
     featured = featuredData?.[0] || null
+    totalPosts = count || 0
   } catch (e) {
     console.warn('DB not ready:', e.message)
   }
 
+  const hasMore = totalPosts > PAGE_SIZE
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Featured post */}
       {featured && (
         <section className="relative overflow-hidden rounded-3xl mt-6 lg:mt-8 bg-surface border border-border">
           <Link href={`/post/${featured.slug}`} className="group block">
@@ -101,12 +121,24 @@ export default async function HomePage() {
               <h2 className="text-2xl font-black text-foreground tracking-tight">Latest Stories</h2>
               <div className="h-px flex-1 bg-border mx-6 hidden sm:block" />
             </div>
+
             {allPosts.length > 0 ? (
-              <div className="grid sm:grid-cols-2 gap-8" id="posts-grid">
-                {allPosts.map(post => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
+              <>
+                <div className="grid sm:grid-cols-2 gap-8" id="posts-grid">
+                  {allPosts.map(post => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+
+                {/* FEAT: Load More pagination */}
+                {hasMore && (
+                  <LoadMorePosts
+                    initialPosts={allPosts}
+                    pageSize={PAGE_SIZE}
+                    totalPosts={totalPosts}
+                  />
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 px-6 rounded-3xl border-2 border-dashed border-border bg-surface/50 text-center">
                 <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
@@ -116,12 +148,16 @@ export default async function HomePage() {
                 <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-xs">
                   The world is waiting for your perspective. Start your blogging journey today.
                 </p>
-                <Link href="/write" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-foreground text-background font-bold hover:scale-105 transition-transform">
+                <Link
+                  href="/write"
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-foreground text-background font-bold hover:scale-105 transition-transform"
+                >
                   Start Writing
                 </Link>
               </div>
             )}
           </div>
+
           <aside className="col-span-12 lg:col-span-4 space-y-10 lg:sticky lg:top-24 lg:self-start">
             <div className="p-1 rounded-3xl bg-surface border border-border shadow-sm">
               <NewsletterForm />

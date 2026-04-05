@@ -1,7 +1,8 @@
 import { CATEGORY_CONFIG } from '@/lib/d1'
 import { supabase } from '@/lib/supabase'
 
-export const dynamic = 'force-dynamic'
+// PERF FIX: Cache sitemap for 1 hour instead of regenerating on every crawl
+export const revalidate = 3600
 
 export default async function sitemap() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.vercel.app'
@@ -32,7 +33,6 @@ export default async function sitemap() {
     priority: 0.5,
   }))
 
-  // FIX: added /search to static pages
   const staticPages = ['', '/search', '/jobs', '/products', '/courses', '/write', '/advertise', '/support'].map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: new Date(),

@@ -215,7 +215,7 @@ export default function AdvertisePage() {
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Get in Touch</h2>
           <p className="text-gray-500 dark:text-gray-400">
-            Fill out the form and we'll reply within 24 hours via email.
+            Fill out the form and we&apos;ll reply within 24 hours via email.
           </p>
         </div>
 
@@ -224,7 +224,7 @@ export default function AdvertisePage() {
             <div className="text-5xl mb-4">🎉</div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Message Sent!</h3>
             <p className="text-gray-500 dark:text-gray-400">
-              We've received your enquiry and will reply to <strong>{form.email || 'your email'}</strong> within 24 hours.
+              We&apos;ve received your enquiry and will reply to <strong>{form.email || 'your email'}</strong> within 24 hours.
             </p>
             <button
               onClick={() => setSubmitted(false)}

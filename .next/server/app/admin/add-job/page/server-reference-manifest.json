@@ -1,0 +1,53 @@
+{
+  "node": {
+    "00a2430ac6fd27f8814bd27a8161ffa4c305d28cc8": {
+      "workers": {
+        "app/admin/add-job/page": {
+          "moduleId": 79685,
+          "async": false,
+          "exportedName": "getJobs",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "getJobs",
+      "filename": "app/actions.js"
+    },
+    "40e28c6f2a9d88b0914df0c2cfa56683f81332649f": {
+      "workers": {
+        "app/admin/add-job/page": {
+          "moduleId": 79685,
+          "async": false,
+          "exportedName": "postJob",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "postJob",
+      "filename": "app/actions.js"
+    },
+    "40dae6a33c17fd1b80bf9975dc2e105c19c42f820b": {
+      "workers": {
+        "app/admin/add-job/page": {
+          "moduleId": 79685,
+          "async": false,
+          "exportedName": "deactivateJobAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "deactivateJobAction",
+      "filename": "app/actions.js"
+    },
+    "4037fd8880cd3410b8c567c4dee266502fd95c1611": {
+      "workers": {
+        "app/admin/add-job/page": {
+          "moduleId": 79685,
+          "async": false,
+          "exportedName": "adminLoginAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "adminLoginAction",
+      "filename": "app/actions.js"
+    }
+  },
+  "edge": {}
+}

@@ -24,11 +24,7 @@ const MenuButton = ({ onClick, active, children, title }) => (
 )
 
 export default function Editor({ content, onUpdate }) {
-  // FIX: Track whether initial content was seeded to avoid re-seeding on every
-  // parent re-render. Without this guard, every keystroke causes the parent to
-  // call onUpdate → update state → pass new `content` prop → useEffect fires →
-  // editor.commands.setContent() resets cursor to the beginning (infinite loop /
-  // cursor-jump bug).
+  // FIX: Guard prevents cursor-jump infinite loop
   const initialised = useRef(false)
 
   const editor = useEditor({
@@ -36,6 +32,9 @@ export default function Editor({ content, onUpdate }) {
       StarterKit.configure({
         heading: { levels: [2, 3] },
         link: false,
+        codeBlock: {
+          HTMLAttributes: { class: 'relative' },
+        },
       }),
       Image.configure({
         HTMLAttributes: { class: 'rounded-lg my-6 w-full' },
@@ -48,8 +47,6 @@ export default function Editor({ content, onUpdate }) {
         placeholder: 'Start writing your story...',
       }),
     ],
-    // Seed initial content directly in useEditor so the editor is ready with
-    // content on first render — no useEffect needed for the initial load.
     content: content || '',
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
@@ -62,17 +59,41 @@ export default function Editor({ content, onUpdate }) {
     },
   })
 
-  // FIX: Only apply external content changes (e.g. loading a saved draft) if
-  // the editor already exists AND the content truly differs AND it's the first
-  // external injection (initialised guard). This prevents the cursor-jump loop.
+  // Only seed content once (edit page loading a saved draft)
   useEffect(() => {
     if (!editor || !content) return
-    if (initialised.current) return          // ← guard: skip after first seed
-    if (editor.getHTML() === content) return // ← already in sync, nothing to do
-
-    editor.commands.setContent(content, false) // false = don't emit update event
+    if (initialised.current) return
+    if (editor.getHTML() === content) return
+    editor.commands.setContent(content, false)
     initialised.current = true
   }, [content, editor])
+
+  // FEAT: Add copy button to code blocks after render
+  useEffect(() => {
+    if (!editor) return
+    const addCopyButtons = () => {
+      const codeBlocks = document.querySelectorAll('.tiptap pre')
+      codeBlocks.forEach(pre => {
+        if (pre.querySelector('.copy-code-btn')) return
+        const btn = document.createElement('button')
+        btn.className = 'copy-code-btn absolute top-2 right-2 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 rounded transition-colors'
+        btn.textContent = 'Copy'
+        btn.addEventListener('click', () => {
+          const code = pre.querySelector('code')?.textContent || ''
+          navigator.clipboard.writeText(code)
+          btn.textContent = 'Copied!'
+          setTimeout(() => { btn.textContent = 'Copy' }, 2000)
+        })
+        pre.style.position = 'relative'
+        pre.appendChild(btn)
+      })
+    }
+    const observer = new MutationObserver(addCopyButtons)
+    const editorEl = document.querySelector('.tiptap')
+    if (editorEl) observer.observe(editorEl, { childList: true, subtree: true })
+    addCopyButtons()
+    return () => observer.disconnect()
+  }, [editor])
 
   const [uploading, setUploading] = useState(false)
   const [showLinkInput, setShowLinkInput] = useState(false)
@@ -84,18 +105,12 @@ export default function Editor({ content, onUpdate }) {
   const handleUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     setUploading(true)
     const formData = new FormData()
     formData.append('file', file)
-
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
-
       if (res.ok && data.url) {
         editor.chain().focus().setImage({ src: data.url }).run()
         toast.success('Image uploaded!')
@@ -110,24 +125,17 @@ export default function Editor({ content, onUpdate }) {
     }
   }
 
-  const addImage = () => {
-    fileInputRef.current?.click()
-  }
-
   const toggleLink = () => {
     if (editor.isActive('link')) {
       editor.chain().focus().unsetLink().run()
       return
     }
-    const previousUrl = editor.getAttributes('link').href || ''
-    setLinkUrl(previousUrl)
+    setLinkUrl(editor.getAttributes('link').href || '')
     setShowLinkInput(true)
   }
 
   const setLink = () => {
-    if (linkUrl) {
-      editor.chain().focus().setLink({ href: linkUrl }).run()
-    }
+    if (linkUrl) editor.chain().focus().setLink({ href: linkUrl }).run()
     setShowLinkInput(false)
     setLinkUrl('')
   }
@@ -163,43 +171,34 @@ export default function Editor({ content, onUpdate }) {
         <MenuButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered List">
           1.
         </MenuButton>
+        {/* FEAT: Code block button */}
+        <MenuButton onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code Block">
+          {'</>'}
+        </MenuButton>
         <div className="w-px bg-gray-200 dark:bg-gray-700 mx-1" />
         <MenuButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
           ─
         </MenuButton>
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={handleUpload}
-        />
-        <MenuButton onClick={addImage} title="Upload Image" active={uploading}>
+        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleUpload} />
+        <MenuButton onClick={() => fileInputRef.current?.click()} title="Upload Image" active={uploading}>
           {uploading ? '⏳' : '🖼'}
         </MenuButton>
         <div className="relative flex items-center">
           <MenuButton onClick={toggleLink} active={editor.isActive('link')} title="Insert Link">
             🔗
           </MenuButton>
-
           {showLinkInput && (
             <div className="absolute top-full left-0 mt-2 z-50 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl flex gap-2 min-w-[280px]">
               <input
                 type="url"
                 value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
+                onChange={e => setLinkUrl(e.target.value)}
                 placeholder="https://example.com"
                 autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') setLink()
-                  if (e.key === 'Escape') setShowLinkInput(false)
-                }}
+                onKeyDown={e => { if (e.key === 'Enter') setLink(); if (e.key === 'Escape') setShowLinkInput(false) }}
                 className="flex-1 px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
-              <button
-                onClick={setLink}
-                className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded hover:bg-emerald-600"
-              >
+              <button onClick={setLink} className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded hover:bg-emerald-600">
                 Set
               </button>
             </div>

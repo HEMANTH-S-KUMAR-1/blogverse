@@ -1,0 +1,17 @@
+{
+  "node": {
+    "406863fd5d982cd521fc875bd970072165d62ed3fc": {
+      "workers": {
+        "app/search/page": {
+          "moduleId": 43615,
+          "async": false,
+          "exportedName": "searchPostsAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "searchPostsAction",
+      "filename": "app/actions.js"
+    }
+  },
+  "edge": {}
+}

@@ -1,0 +1,65 @@
+{
+  "node": {
+    "4008ac48080d53b6302fb31d572b905bc55921415f": {
+      "workers": {
+        "app/admin/posts/page": {
+          "moduleId": 46308,
+          "async": false,
+          "exportedName": "getAdminPostsAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "getAdminPostsAction",
+      "filename": "app/actions.js"
+    },
+    "403894f84c6334cdefaaf97216b8f0164a6f61d96a": {
+      "workers": {
+        "app/admin/posts/page": {
+          "moduleId": 46308,
+          "async": false,
+          "exportedName": "hidePostAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "hidePostAction",
+      "filename": "app/actions.js"
+    },
+    "40ce8d2deb90d740453a50236621b0ce690f259a26": {
+      "workers": {
+        "app/admin/posts/page": {
+          "moduleId": 46308,
+          "async": false,
+          "exportedName": "restorePostAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "restorePostAction",
+      "filename": "app/actions.js"
+    },
+    "40fc8a396346b6236a54a9f148d54b82095c0736f2": {
+      "workers": {
+        "app/admin/posts/page": {
+          "moduleId": 46308,
+          "async": false,
+          "exportedName": "adminDeletePostAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "adminDeletePostAction",
+      "filename": "app/actions.js"
+    },
+    "4037fd8880cd3410b8c567c4dee266502fd95c1611": {
+      "workers": {
+        "app/admin/posts/page": {
+          "moduleId": 46308,
+          "async": false,
+          "exportedName": "adminLoginAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "adminLoginAction",
+      "filename": "app/actions.js"
+    }
+  },
+  "edge": {}
+}
