@@ -35,6 +35,9 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-4">
+            <Link href="/discover" className="text-sm text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              Discover
+            </Link>
             <Link href="/jobs" className="text-sm text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
               Jobs
             </Link>
@@ -103,6 +106,7 @@ export default function Navbar() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden pb-4 border-t border-gray-100 dark:border-zinc-900 mt-2 pt-4 space-y-2">
+            <Link href="/discover" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Discover</Link>
             <Link href="/jobs" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Jobs</Link>
             <Link href="/products" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Products</Link>
             <Link href="/courses" className="block px-3 py-2 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900" onClick={() => setMenuOpen(false)}>Courses</Link>

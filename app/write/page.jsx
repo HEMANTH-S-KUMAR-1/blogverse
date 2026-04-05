@@ -92,14 +92,19 @@ export default function WritePage() {
   ]
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Write a Post</h1>
-        <button onClick={() => router.back()} className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-          Cancel
-        </button>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border sticky top-16 z-40 bg-background/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">Create New Post</h1>
+          <button onClick={() => router.back()} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Cancel
+          </button>
+        </div>
       </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Title */}
         <input
@@ -281,6 +286,8 @@ export default function WritePage() {
 
       {/* Edit Key Modal */}
       {editKey && <EditKeyModal editKey={editKey} onClose={handleModalClose} />}
+      </form>
+      </div>
     </div>
   )
 }

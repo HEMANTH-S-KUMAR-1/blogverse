@@ -12,6 +12,10 @@ import AdSenseSlot from '@/components/AdSenseSlot'
 import Link from 'next/link'
 import CategoryFilter from '@/components/CategoryFilter'
 import LoadMorePosts from '@/components/LoadMorePosts'
+import HeroSection from '@/components/HeroSection'
+import FeatureGrid from '@/components/FeatureGrid'
+import CtaSection from '@/components/CtaSection'
+import TestimonialSection from '@/components/TestimonialSection'
 
 // PERF FIX: ISR — revalidate every 60 seconds instead of force-dynamic
 // New posts trigger revalidatePath('/') in createPost action
@@ -55,7 +59,17 @@ export default async function HomePage() {
   const hasMore = totalPosts > PAGE_SIZE
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full">
+      {/* Hero Section */}
+      <HeroSection />
+
+      {/* Features Section */}
+      <FeatureGrid />
+
+      {/* Testimonials Section */}
+      <TestimonialSection />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Featured post */}
       {featured && (
         <section className="relative overflow-hidden rounded-3xl mt-6 lg:mt-8 bg-surface border border-border">
@@ -172,6 +186,10 @@ export default async function HomePage() {
           </aside>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <CtaSection />
+      </div>
     </div>
   )
 }

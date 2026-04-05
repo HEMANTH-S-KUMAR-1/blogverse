@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 mt-auto">
+    <footer className="border-t border-border bg-background/50 backdrop-blur-sm mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -24,21 +24,22 @@ export default function Footer() {
 
           {/* Platform */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Platform</h3>
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Platform</h3>
             <ul className="space-y-3">
-              <li><Link href="/write" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Write a Post</Link></li>
-              <li><Link href="/jobs" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Jobs Board</Link></li>
-              <li><Link href="/products" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Recommended Tools</Link></li>
-              <li><Link href="/courses" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Courses & Learning</Link></li>
+              <li><Link href="/write" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Write a Post</Link></li>
+              <li><Link href="/discover" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Discover</Link></li>
+              <li><Link href="/jobs" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Jobs Board</Link></li>
+              <li><Link href="/products" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Recommended Tools</Link></li>
+              <li><Link href="/courses" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Courses & Learning</Link></li>
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Company</h3>
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Company</h3>
             <ul className="space-y-3">
-              <li><Link href="/advertise" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Advertise</Link></li>
-              <li><Link href="/support" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors">Support Us</Link></li>
+              <li><Link href="/advertise" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Advertise</Link></li>
+              <li><Link href="/support" className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors">Support Us</Link></li>
             </ul>
           </div>
 
@@ -69,13 +70,13 @@ export default function Footer() {
         </div>
 
         {/* ✅ NEW: Affiliate Disclosure */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-3">
-            <strong className="text-gray-500 dark:text-gray-400">Affiliate Disclosure:</strong>{' '}
+        <div className="mt-8 pt-6 border-t border-border">
+          <p className="text-xs text-muted-foreground text-center mb-3">
+            <strong className="text-slate-500 dark:text-slate-400">Affiliate Disclosure:</strong>{' '}
             Some links on BlogVerse are affiliate links. We may earn a small commission at no extra cost to you.
             This helps us keep the platform free for everyone.
           </p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center">
+          <p className="text-sm text-muted-foreground text-center">
             © {new Date().getFullYear()} BlogVerse. Built for the community, by the community.
           </p>
         </div>
