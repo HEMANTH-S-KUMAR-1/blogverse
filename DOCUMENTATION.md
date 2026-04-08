@@ -26,7 +26,7 @@
 
 ## 1. Project Overview
 
-BlogVerse is a **Next.js 16** application that lets anyone publish blog posts without creating an account. Writers choose an identity mode (anonymous, pseudonym, or public) and receive a secret **edit key** after publishing, which they keep to edit or delete their post later.
+BlogVerse is a **Next.js** application (version `16.2.1` as specified in `package.json` — a canary/pre-release build) that lets anyone publish blog posts without creating an account. Writers choose an identity mode (anonymous, pseudonym, or public) and receive a secret **edit key** after publishing, which they keep to edit or delete their post later.
 
 Key characteristics:
 - **No user authentication** — identity is managed by edit keys and identity modes.
@@ -41,7 +41,7 @@ Key characteristics:
 
 | Layer | Technology | Version |
 |---|---|---|
-| Framework | Next.js (App Router) | 16.2.1 |
+| Framework | Next.js (App Router) | 16.2.1 (pre-release/canary — see `package.json`) |
 | UI Styling | Tailwind CSS v4 | ^4 |
 | Database | Supabase (PostgreSQL + RLS) | ^2.101.1 |
 | Rich Text Editor | TipTap | ^3.21.0 |
@@ -403,9 +403,9 @@ Applied to `createPost` and `submitCommentAction`.
 |---|---|---|
 | `getJobs()` | Public | Fetch all active job listings |
 | `postJob(jobData)` | Admin cookie | Insert new job listing, revalidate `/jobs` |
-| `deactivateJobAction(id)` | Public (no auth) | Set `is_active = false` |
+| `deactivateJobAction(id)` | **None (⚠ security gap)** | Set `is_active = false` |
 
-> **Note:** `deactivateJobAction` currently lacks admin authentication. Only admins should be able to call it (tracked as a future improvement).
+> ⚠️ **Known security issue:** `deactivateJobAction` currently has no admin authentication check, meaning any user can deactivate any job listing by calling this server action. This should be fixed by adding `if (!await requireAdmin()) return { success: false, error: 'Unauthorized' }` at the top of the function.
 
 ### Products
 
