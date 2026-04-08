@@ -1,206 +1,213 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { getAdminPostsAction, hidePostAction, restorePostAction, adminDeletePostAction, adminLoginAction } from '@/app/actions'
-import { CATEGORY_CONFIG } from '@/lib/d1'
+import { adminLoginAction, getAdminPostsAction, hidePostAction, restorePostAction, adminDeletePostAction } from '@/app/actions'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
-import { Eye, EyeOff, Trash2, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
-
-const PAGE_SIZE = 20
+import { Eye, EyeOff, Trash2, Lock, LogIn, RefreshCw } from 'lucide-react'
 
 export default function AdminPostsPage() {
   const [authed, setAuthed] = useState(false)
   const [password, setPassword] = useState('')
+  const [logging, setLogging] = useState(false)
   const [posts, setPosts] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState('all') // 'all' | 'published' | 'hidden'
+  const LIMIT = 20
 
-  // useCallback so it's stable for useEffect deps
-  const loadPosts = useCallback(async (p) => {
-    setLoading(true)
-    const { success, posts: data, total: t } = await getAdminPostsAction({ page: p, limit: PAGE_SIZE })
-    if (success) { setPosts(data); setTotal(t) }
-    setLoading(false)
-  }, [])
-
-  const login = async (e) => {
-    e.preventDefault()
-    const { success } = await adminLoginAction(password)
-    if (success) { setAuthed(true) }
-    else toast.error('Wrong password')
-  }
-
-  // Load posts when authed or page changes
-  useEffect(() => {
+  const loadPosts = useCallback(async () => {
     if (!authed) return
-    const fetchPosts = async () => {
-      await loadPosts(page)
+    setLoading(true)
+    const result = await getAdminPostsAction({ page, limit: LIMIT })
+    if (result.success) {
+      setPosts(result.posts)
+      setTotal(result.total)
     }
-    fetchPosts()
-  }, [authed, page, loadPosts])
+    setLoading(false)
+  }, [authed, page])
 
-  const handleHide = async (id) => {
-    if (!confirm('Hide this post from public view?')) return
-    const { success } = await hidePostAction(id)
-    if (success) { toast.success('Post hidden'); loadPosts(page) }
-    else toast.error('Failed')
+  useEffect(() => { loadPosts() }, [authed, page]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLogging(true)
+    const { success, error } = await adminLoginAction(password)
+    if (success) { setAuthed(true); toast.success('Welcome back!') }
+    else toast.error(error || 'Invalid password')
+    setLogging(false)
   }
 
-  const handleRestore = async (id) => {
+  const handleHide = async (id, title) => {
+    if (!confirm(`Hide "${title}"?`)) return
+    const { success } = await hidePostAction(id)
+    if (success) { toast.success('Post hidden'); loadPosts() }
+    else toast.error('Failed to hide post')
+  }
+
+  const handleRestore = async (id, title) => {
+    if (!confirm(`Restore "${title}"?`)) return
     const { success } = await restorePostAction(id)
-    if (success) { toast.success('Post restored'); loadPosts(page) }
-    else toast.error('Failed')
+    if (success) { toast.success('Post restored'); loadPosts() }
+    else toast.error('Failed to restore post')
   }
 
   const handleDelete = async (id, title) => {
     if (!confirm(`Permanently delete "${title}"? This cannot be undone.`)) return
     const { success } = await adminDeletePostAction(id)
-    if (success) { toast.success('Post deleted'); loadPosts(page) }
-    else toast.error('Failed')
+    if (success) { toast.success('Post deleted'); loadPosts() }
+    else toast.error('Failed to delete post')
   }
 
-  const filtered = filter === 'all' ? posts : posts.filter(p => p.status === filter)
-  const totalPages = Math.ceil(total / PAGE_SIZE)
-
-  const catColors = {
-    health: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    tech: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    finance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    student: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-    business: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    eco: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
-  }
-
+  // ── Login screen ────────────────────────────────────────────
   if (!authed) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">B</div>
-            <h1 className="text-2xl font-bold text-foreground">Admin — Posts</h1>
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8 shadow-xl">
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 mx-auto mb-6">
+            <Lock className="w-7 h-7 text-slate-600 dark:text-slate-400" />
           </div>
-          <form onSubmit={login} className="space-y-4">
+          <h1 className="text-2xl font-bold text-center text-foreground mb-2">Admin Access</h1>
+          <p className="text-sm text-center text-slate-400 mb-8">BlogVerse admin panel</p>
+          <form onSubmit={handleLogin} className="space-y-4">
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Admin password"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-foreground focus:ring-2 focus:ring-emerald-500 outline-none"
+              placeholder="Enter admin password"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
               autoFocus
+              id="admin-password-input"
             />
-            <button type="submit" className="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-colors">
-              Sign In
+            <button
+              type="submit"
+              disabled={logging}
+              className="w-full py-3 rounded-xl bg-foreground text-background font-bold disabled:opacity-50 hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              {logging ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
-          <p className="text-center mt-4 text-sm">
-            <Link href="/admin/comments" className="text-emerald-500 hover:underline">← Comments panel</Link>
-          </p>
         </div>
       </div>
     )
   }
 
+  // ── Filter posts client-side ────────────────────────────────
+  const filteredPosts = filter === 'all' ? posts
+    : posts.filter(p => p.status === filter)
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Posts Management</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">{total} total posts</p>
+          <h1 className="text-3xl font-bold text-foreground">Posts</h1>
+          <p className="text-slate-400 text-sm mt-1">{total} total posts</p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/admin/comments" className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-surface transition-colors">
+        <div className="flex items-center gap-3">
+          <Link href="/admin/comments" className="px-4 py-2 rounded-xl border border-border text-sm font-medium hover:bg-surface transition-colors">
             Comments
           </Link>
-          <Link href="/admin/add-job" className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-surface transition-colors">
-            Add Job
-          </Link>
+          <button
+            onClick={loadPosts}
+            className="p-2 rounded-xl border border-border hover:bg-surface transition-colors"
+            aria-label="Refresh"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-emerald-500' : 'text-slate-400'}`} />
+          </button>
         </div>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 border-b border-border pb-4">
         {['all', 'published', 'hidden'].map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               filter === f
-                ? 'bg-emerald-500 text-white'
-                : 'border border-border hover:bg-surface text-foreground'
+                ? 'bg-foreground text-background'
+                : 'text-slate-400 hover:text-foreground hover:bg-surface'
             }`}
           >
-            {f}
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+            <span className="ml-2 text-xs opacity-60">
+              {f === 'all' ? posts.length : posts.filter(p => p.status === f).length}
+            </span>
           </button>
         ))}
       </div>
 
+      {/* Posts table */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center justify-center py-16">
+          <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
         </div>
       ) : (
         <div className="rounded-2xl border border-border overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-surface border-b border-border">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Title</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 hidden md:table-cell">Category</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 hidden sm:table-cell">Author</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-500 hidden sm:table-cell">Views</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Status</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-500">Actions</th>
+            <thead>
+              <tr className="border-b border-border bg-surface/50">
+                <th className="text-left px-4 py-3 font-semibold text-slate-500">Title</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-500 hidden sm:table-cell">Author</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-500 hidden md:table-cell">Category</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-500 hidden lg:table-cell">Views</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-500 hidden lg:table-cell">Date</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-500">Status</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map(post => (
-                <tr key={post.id} className={`hover:bg-surface/50 transition-colors ${post.status === 'hidden' ? 'opacity-60' : ''}`}>
+              {filteredPosts.map(post => (
+                <tr key={post.id} className="hover:bg-surface/50 transition-colors">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-foreground line-clamp-1 max-w-[280px]">{post.title}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
+                    <Link
+                      href={`/post/${post.slug}`}
+                      target="_blank"
+                      className="font-medium text-foreground hover:text-emerald-500 transition-colors line-clamp-1 max-w-[200px] block"
+                    >
+                      {post.title}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-slate-400 hidden sm:table-cell">
+                    {post.author_display_name || 'Anonymous'}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${catColors[post.category] || 'bg-gray-100 text-gray-700'}`}>
-                      {CATEGORY_CONFIG[post.category]?.label || post.category}
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs capitalize">
+                      {post.category}
                     </span>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-slate-500">{post.author_display_name || 'Anonymous'}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-right text-slate-500">{(post.views || 0).toLocaleString()}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
+                  <td className="px-4 py-3 text-slate-400 hidden lg:table-cell">
+                    {post.views?.toLocaleString() || 0}
+                  </td>
+                  <td className="px-4 py-3 text-slate-400 text-xs hidden lg:table-cell">
+                    {new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       post.status === 'published'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                     }`}>
                       {post.status}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Link
-                        href={`/post/${post.slug}`}
-                        target="_blank"
-                        className="p-1.5 rounded-lg hover:bg-surface text-slate-400 hover:text-foreground transition-colors"
-                        title="View post"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Link>
+                    <div className="flex items-center gap-1">
                       {post.status === 'published' ? (
                         <button
-                          onClick={() => handleHide(post.id)}
-                          className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/10 text-slate-400 hover:text-amber-600 transition-colors"
+                          onClick={() => handleHide(post.id, post.title)}
+                          className="p-1.5 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/20 text-slate-400 hover:text-amber-600 transition-colors"
                           title="Hide post"
                         >
                           <EyeOff className="w-4 h-4" />
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleRestore(post.id)}
-                          className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/10 text-slate-400 hover:text-green-600 transition-colors"
+                          onClick={() => handleRestore(post.id, post.title)}
+                          className="p-1.5 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600 transition-colors"
                           title="Restore post"
                         >
                           <Eye className="w-4 h-4" />
@@ -208,7 +215,7 @@ export default function AdminPostsPage() {
                       )}
                       <button
                         onClick={() => handleDelete(post.id, post.title)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 text-slate-400 hover:text-red-500 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors"
                         title="Delete post"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -217,9 +224,11 @@ export default function AdminPostsPage() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {filteredPosts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-slate-400">No posts found</td>
+                  <td colSpan={7} className="px-4 py-16 text-center text-slate-400">
+                    No posts found.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -227,23 +236,26 @@ export default function AdminPostsPage() {
         </div>
       )}
 
-      {totalPages > 1 && (
+      {/* Pagination */}
+      {total > LIMIT && (
         <div className="flex items-center justify-between mt-6">
-          <p className="text-sm text-slate-400">Page {page} of {totalPages}</p>
+          <p className="text-sm text-slate-400">
+            Page {page} of {Math.ceil(total / LIMIT)}
+          </p>
           <div className="flex gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-2 rounded-lg border border-border disabled:opacity-40 hover:bg-surface transition-colors"
+              className="px-4 py-2 rounded-xl border border-border text-sm disabled:opacity-40 hover:bg-surface transition-colors"
             >
-              <ChevronLeft className="w-4 h-4" />
+              Previous
             </button>
             <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-2 rounded-lg border border-border disabled:opacity-40 hover:bg-surface transition-colors"
+              onClick={() => setPage(p => p + 1)}
+              disabled={page >= Math.ceil(total / LIMIT)}
+              className="px-4 py-2 rounded-xl border border-border text-sm disabled:opacity-40 hover:bg-surface transition-colors"
             >
-              <ChevronRight className="w-4 h-4" />
+              Next
             </button>
           </div>
         </div>
@@ -251,4 +263,3 @@ export default function AdminPostsPage() {
     </div>
   )
 }
-

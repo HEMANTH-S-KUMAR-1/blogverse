@@ -5,6 +5,8 @@
   "/admin/comments/page": "app/admin/comments/page.js",
   "/admin/posts/page": "app/admin/posts/page.js",
   "/advertise/page": "app/advertise/page.js",
+  "/api/debug/route": "app/api/debug/route.js",
+  "/api/upload/route": "app/api/upload/route.js",
   "/category/[name]/page": "app/category/[name]/page.js",
   "/courses/page": "app/courses/page.js",
   "/edit/[slug]/page": "app/edit/[slug]/page.js",

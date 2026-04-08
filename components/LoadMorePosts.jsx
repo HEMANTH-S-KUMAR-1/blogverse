@@ -5,7 +5,7 @@ import { getPostsPage } from '@/app/actions'
 import PostCard from '@/components/PostCard'
 import { Loader2 } from 'lucide-react'
 
-export default function LoadMorePosts({ initialPosts, pageSize, totalPosts }) {
+export default function LoadMorePosts({ initialPosts, pageSize, totalPosts, category = null }) {
   const [posts, setPosts] = useState(initialPosts)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -14,11 +14,14 @@ export default function LoadMorePosts({ initialPosts, pageSize, totalPosts }) {
   const loadMore = async () => {
     setLoading(true)
     const nextPage = page + 1
-    const { posts: newPosts, hasMore: more } = await getPostsPage({ page: nextPage, limit: pageSize })
+    const { posts: newPosts, hasMore: more } = await getPostsPage({
+      page: nextPage,
+      limit: pageSize,
+      category,
+    })
     setPosts(prev => {
       const ids = new Set(prev.map(p => p.id))
-      const unique = newPosts.filter(p => !ids.has(p.id))
-      return [...prev, ...unique]
+      return [...prev, ...newPosts.filter(p => !ids.has(p.id))]
     })
     setPage(nextPage)
     setHasMore(more)

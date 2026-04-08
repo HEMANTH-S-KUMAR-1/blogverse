@@ -5,6 +5,8 @@
   "/admin/comments/page": "/admin/comments",
   "/admin/posts/page": "/admin/posts",
   "/advertise/page": "/advertise",
+  "/api/debug/route": "/api/debug",
+  "/api/upload/route": "/api/upload",
   "/category/[name]/page": "/category/[name]",
   "/courses/page": "/courses",
   "/edit/[slug]/page": "/edit/[slug]",

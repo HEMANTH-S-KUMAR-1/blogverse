@@ -1,15 +1,15 @@
 {
   "node": {
-    "40d84cd437d796a75158ca8c0b4214dd27d886653c": {
+    "40cbc101a96af4406554628153bcb8a1c610d74d72": {
       "workers": {
         "app/category/[name]/page": {
           "moduleId": 86354,
           "async": false,
-          "exportedName": "subscribeNewsletter",
+          "exportedName": "getPostsPage",
           "filename": "app/actions.js"
         }
       },
-      "exportedName": "subscribeNewsletter",
+      "exportedName": "getPostsPage",
       "filename": "app/actions.js"
     }
   },

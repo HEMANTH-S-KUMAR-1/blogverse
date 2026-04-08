@@ -1,66 +1,71 @@
 import { getJobs } from '@/app/actions'
 import JobCard from '@/components/JobCard'
+import Link from 'next/link'
 
 export const metadata = {
-  title: 'Find Opportunities — BlogVerse',
-  description: 'Explore job listings and career opportunities in the BlogVerse community.',
+  title: 'Jobs Board – BlogVerse',
+  description: 'Find remote, freelance, and full-time opportunities posted by the BlogVerse community.',
 }
 
-export const revalidate = 60
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export default async function JobsPage() {
   const jobs = await getJobs()
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Find Opportunities</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Discover jobs and gigs in our community</p>
+      <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-100 dark:border-blue-900/30 p-8 lg:p-12 mb-12">
+        <h1 className="text-4xl font-extrabold text-foreground mb-3">
+          💼 Community Jobs Board
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl">
+          Discover remote, freelance, and full-time opportunities — curated for the BlogVerse community.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/70 dark:bg-white/5 border border-blue-100 dark:border-blue-900/30 text-sm text-slate-600 dark:text-slate-400">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            {jobs.length} active listings
+          </div>
         </div>
-        <a
-          href="#post-a-job"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors"
-        >
-          Post a Job
-        </a>
       </div>
 
-      {/* Jobs Grid */}
-      {jobs && jobs.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+      {/* Jobs grid */}
+      {jobs.length > 0 ? (
+        <div className="grid gap-6">
           {jobs.map(job => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 mb-16">
-          <p className="text-gray-400 text-lg mb-2">No job listings yet.</p>
-          <p className="text-gray-400 text-sm">Be the first to post a job!</p>
+        <div className="flex flex-col items-center justify-center py-24 rounded-3xl border-2 border-dashed border-border text-center px-6">
+          <span className="text-6xl mb-4">💼</span>
+          <h2 className="text-2xl font-bold text-foreground mb-2">No jobs yet</h2>
+          <p className="text-slate-500 mb-8 max-w-sm">
+            The jobs board is empty right now. Check back soon or advertise your own opportunity.
+          </p>
+          <Link
+            href="/advertise"
+            className="px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/20"
+          >
+            Post a Job
+          </Link>
         </div>
       )}
 
-      {/* Post a Job Section */}
-      <section id="post-a-job" className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10  p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Post a Job Listing</h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">Reach our growing community of writers and creators</p>
-
-        <div className="inline-block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-left max-w-md mx-auto">
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">₹199</p>
-          <p className="text-sm text-gray-500 mb-4">per listing</p>
-
-          <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-            <p>📱 <strong>Step 1:</strong> Pay ₹199 to the UPI ID below</p>
-            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-              <span className="font-mono text-sm">{process.env.NEXT_PUBLIC_UPI_ID || 'your_upi_id_here'}</span>
-            </div>
-            <p>📧 <strong>Step 2:</strong> Email your job details with subject &quot;Job Listing Payment&quot;</p>
-            <p>✅ <strong>Step 3:</strong> Your listing goes live within 24 hours</p>
-          </div>
+      {/* CTA */}
+      {jobs.length > 0 && (
+        <div className="mt-16 text-center p-8 rounded-3xl border border-border bg-surface">
+          <h3 className="text-xl font-bold text-foreground mb-2">Want to post a job?</h3>
+          <p className="text-slate-500 mb-6">Reach thousands of writers, creators, and professionals in our community.</p>
+          <Link
+            href="/advertise"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-foreground text-background font-bold hover:scale-105 transition-transform"
+          >
+            Get in Touch
+          </Link>
         </div>
-      </section>
+      )}
     </div>
   )
 }

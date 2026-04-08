@@ -1,27 +1,15 @@
 {
   "node": {
-    "6026f8720a9b7bbfb0cc8c64c85b47cbf11e940b44": {
+    "40903401abb14bcc375c4802a5efd12173f18b4d56": {
       "workers": {
         "app/post/[slug]/page": {
           "moduleId": 25645,
           "async": false,
-          "exportedName": "loadReactions",
+          "exportedName": "incrementViews",
           "filename": "app/actions.js"
         }
       },
-      "exportedName": "loadReactions",
-      "filename": "app/actions.js"
-    },
-    "70061bf7f06cf9d932df28d62bd63f347535cffa77": {
-      "workers": {
-        "app/post/[slug]/page": {
-          "moduleId": 25645,
-          "async": false,
-          "exportedName": "submitReaction",
-          "filename": "app/actions.js"
-        }
-      },
-      "exportedName": "submitReaction",
+      "exportedName": "incrementViews",
       "filename": "app/actions.js"
     },
     "40771f19ceb841181ff359d696e4918fd0bca89df9": {
@@ -48,28 +36,40 @@
       "exportedName": "submitCommentAction",
       "filename": "app/actions.js"
     },
-    "40d84cd437d796a75158ca8c0b4214dd27d886653c": {
+    "6026f8720a9b7bbfb0cc8c64c85b47cbf11e940b44": {
       "workers": {
         "app/post/[slug]/page": {
           "moduleId": 25645,
           "async": false,
-          "exportedName": "subscribeNewsletter",
+          "exportedName": "loadReactions",
           "filename": "app/actions.js"
         }
       },
-      "exportedName": "subscribeNewsletter",
+      "exportedName": "loadReactions",
       "filename": "app/actions.js"
     },
-    "40903401abb14bcc375c4802a5efd12173f18b4d56": {
+    "70061bf7f06cf9d932df28d62bd63f347535cffa77": {
       "workers": {
         "app/post/[slug]/page": {
           "moduleId": 25645,
           "async": false,
-          "exportedName": "incrementViews",
+          "exportedName": "submitReaction",
           "filename": "app/actions.js"
         }
       },
-      "exportedName": "incrementViews",
+      "exportedName": "submitReaction",
+      "filename": "app/actions.js"
+    },
+    "606e46afca4563b63e547662dfb881a9b22d8482b5": {
+      "workers": {
+        "app/post/[slug]/page": {
+          "moduleId": 25645,
+          "async": false,
+          "exportedName": "deletePostAction",
+          "filename": "app/actions.js"
+        }
+      },
+      "exportedName": "deletePostAction",
       "filename": "app/actions.js"
     }
   },

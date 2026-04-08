@@ -1,61 +1,51 @@
-import { CATEGORY_CONFIG, safeImageUrl } from '@/lib/d1'
 import { supabase } from '@/lib/supabase'
+import { CATEGORY_CONFIG } from '@/lib/d1'
+import { parseTags } from '@/lib/utils'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import Image from 'next/image'
-import DOMPurify from 'isomorphic-dompurify'
-import ReactionBar from '@/components/ReactionBar'
+import Link from 'next/link'
+import ReadingProgress from '@/components/ReadingProgress'
+import BackToTop from '@/components/BackToTop'
+import TableOfContents from '@/components/TableOfContents'
+import ViewIncrementer from '@/components/ViewIncrementer'
 import ShareButtons from '@/components/ShareButtons'
-import TipButton from '@/components/TipButton'
 import CommentSection from '@/components/CommentSection'
-import NewsletterForm from '@/components/NewsletterForm'
+import ReactionBar from '@/components/ReactionBar'
+import TipButton from '@/components/TipButton'
+import DeletePostButton from '@/components/DeletePostButton'
 import AffiliateBanner from '@/components/AffiliateBanner'
 import AdSenseSlot from '@/components/AdSenseSlot'
 import PostCard from '@/components/PostCard'
-import ViewIncrementer from '@/components/ViewIncrementer'
-
-export const dynamic = 'force-dynamic'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.vercel.app'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
-  let post = null
-  try {
-    const { data } = await supabase
-      .from('posts')
-      .select('title, excerpt, category, author_display_name, published_at, featured_image_url')
-      .eq('slug', slug)
-      .single()
-    post = data
-  } catch (e) {
-    console.warn('Metadata: DB error:', e.message)
-  }
+  const { data: post } = await supabase
+    .from('posts')
+    .select('title, excerpt, featured_image_url, author_display_name, category')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .single()
 
   if (!post) return { title: 'Post Not Found' }
 
-  const title = `${post.title} – BlogVerse`
-  const description = post.excerpt || 'Read this post on BlogVerse'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.vercel.app'
+  const ogImage = post.featured_image_url || `${siteUrl}/og-default.png`
 
   return {
-    title,
-    description,
-    alternates: { canonical: `${siteUrl}/post/${slug}` },
+    title: post.title,
+    description: post.excerpt || `Read "${post.title}" on BlogVerse`,
     openGraph: {
-      title,
-      description,
+      title: post.title,
+      description: post.excerpt || `Read "${post.title}" on BlogVerse`,
       type: 'article',
-      publishedTime: post.published_at,
-      authors: post.author_display_name ? [post.author_display_name] : [],
-      images: post.featured_image_url
-        ? [{ url: post.featured_image_url, width: 1200, height: 630, alt: post.title }]
-        : [],
+      url: `${siteUrl}/post/${slug}`,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
-      images: post.featured_image_url ? [post.featured_image_url] : [],
+      title: post.title,
+      description: post.excerpt || `Read "${post.title}" on BlogVerse`,
+      images: [ogImage],
     },
   }
 }
@@ -63,200 +53,252 @@ export async function generateMetadata({ params }) {
 export default async function PostPage({ params }) {
   const { slug } = await params
 
-  let post = null
-  let relatedPosts = []
+  const { data: post, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .single()
 
-  try {
-    const { data } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single()
-    post = data
-  } catch (e) {
-    console.warn('PostPage: DB error:', e.message)
-  }
+  if (error || !post) notFound()
 
-  if (!post) notFound()
-
-  try {
-    post.tags = JSON.parse(post.tags)
-  } catch {
-    post.tags = []
-  }
-
-  try {
-    const { data } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('category', post.category)
-      .eq('status', 'published')
-      .neq('id', post.id)
-      .order('published_at', { ascending: false })
-      .limit(3)
-    relatedPosts = data || []
-  } catch (e) {
-    console.warn('RelatedPosts: DB error:', e.message)
-  }
-
-  const cat = CATEGORY_CONFIG[post.category]
-  const date = new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+  const cat = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.tech
+  const tags = parseTags(post.tags)
+  const date = new Date(post.published_at).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  })
   const wordCount = post.content?.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length || 0
-  const readTime = Math.max(1, Math.ceil(wordCount / 200))
+  const readMins = Math.max(1, Math.ceil(wordCount / 200))
 
-  const safeContent = DOMPurify.sanitize(post.content || '', {
-    USE_PROFILES: { html: true },
-    ADD_TAGS: ['iframe'],
-    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'],
-  })
+  // Related posts
+  const { data: relatedPosts } = await supabase
+    .from('posts')
+    .select('id, slug, title, excerpt, category, featured_image_url, author_display_name, published_at, views')
+    .eq('status', 'published')
+    .eq('category', post.category)
+    .neq('id', post.id)
+    .order('views', { ascending: false })
+    .limit(3)
 
-  const contentParts = safeContent.split('</p>')
-  let renderedContent = ''
-  contentParts.forEach((part, i) => {
-    renderedContent += part + (i < contentParts.length - 1 ? '</p>' : '')
-    if (i === 2) renderedContent += '<div id="inline-affiliate-slot"></div>'
-    if (i === 5) renderedContent += '<div id="inline-adsense-slot"></div>'
-  })
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'Article',
-        headline: post.title,
-        description: post.excerpt,
-        image: post.featured_image_url || undefined,
-        datePublished: post.published_at,
-        dateModified: post.published_at,
-        author: { '@type': 'Person', name: post.author_display_name || 'Anonymous' },
-      },
-      {
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
-          { '@type': 'ListItem', position: 2, name: cat?.label || 'Blog', item: `${siteUrl}/category/${post.category}` },
-          { '@type': 'ListItem', position: 3, name: post.title },
-        ],
-      },
-    ],
-  }
-
-  const safeAvatarUrl = safeImageUrl(post.author_avatar_url)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://blogverse.vercel.app'
 
   return (
-    <div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <>
+      <ReadingProgress />
       <ViewIncrementer postId={post.id} />
 
-      {post.featured_image_url && (
-        <div className="w-full max-h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800 relative" style={{ height: '500px' }}>
-          <Image src={post.featured_image_url} alt={post.title} fill className="object-cover" priority />
-        </div>
-      )}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-12">
-          <article className="lg:col-span-2">
-            {post.is_sponsored && (
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 mb-4">
-                Sponsored
-              </span>
-            )}
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <Link href={`/category/${post.category}`}>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${cat?.badgeClass || ''}`}>
-                  {cat?.label}
-                </span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* ── Main Content ─────────────────────────────────────── */}
+          <main className="lg:col-span-8">
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-2 text-xs text-slate-400 mb-6">
+              <Link href="/" className="hover:text-emerald-500 transition-colors">Home</Link>
+              <span>/</span>
+              <Link href={`/category/${post.category}`} className="hover:text-emerald-500 transition-colors capitalize">
+                {cat.emoji} {cat.label}
               </Link>
-              <span className="text-sm text-gray-400">{date}</span>
-              <span className="text-sm text-gray-400">·</span>
-              <span className="text-sm text-gray-400">{readTime} min read</span>
-              <span className="text-sm text-gray-400">·</span>
-              <span className="text-sm text-gray-400">{post.views} views</span>
+              <span>/</span>
+              <span className="text-slate-500 truncate max-w-[200px]">{post.title}</span>
+            </nav>
+
+            {/* Category badge */}
+            <div className="mb-4">
+              <Link
+                href={`/category/${post.category}`}
+                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${cat.borderClass}`}
+              >
+                <span>{cat.emoji}</span>
+                {cat.label}
+              </Link>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight mb-6" style={{ fontFamily: 'var(--font-serif)' }}>
+            {/* Title */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight mb-6">
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-3 mb-8 pb-8 border-b border-gray-200 dark:border-gray-800">
-              {safeAvatarUrl ? (
-                <Image src={safeAvatarUrl} alt={post.author_display_name || 'Author'} width={40} height={40} className="rounded-full object-cover" />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
-                  {(post.author_display_name || 'A')[0].toUpperCase()}
-                </div>
-              )}
-              <div>
-                {post.identity_mode !== 'anonymous' ? (
-                  <Link href={`/writer/${encodeURIComponent(post.author_display_name)}`} className="text-sm font-medium text-gray-900 dark:text-white hover:text-emerald-500">
-                    {post.author_display_name}
-                  </Link>
+            {/* Meta row */}
+            <div className="flex flex-wrap items-center gap-4 mb-8 pb-8 border-b border-border">
+              {/* Author */}
+              <div className="flex items-center gap-3">
+                {post.author_avatar_url ? (
+                  <Image
+                    src={post.author_avatar_url}
+                    alt={post.author_display_name || 'Author'}
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover border-2 border-border"
+                  />
                 ) : (
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{post.author_display_name}</span>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm">
+                    {(post.author_display_name || 'A')[0].toUpperCase()}
+                  </div>
                 )}
-                {post.author_bio && <p className="text-xs text-gray-400">{post.author_bio}</p>}
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{post.author_display_name || 'Anonymous'}</p>
+                  {post.author_bio && (
+                    <p className="text-xs text-slate-400 line-clamp-1 max-w-[200px]">{post.author_bio}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-slate-400 ml-auto">
+                <span>{date}</span>
+                <span>·</span>
+                <span>{readMins} min read</span>
+                <span>·</span>
+                <span>{post.views?.toLocaleString()} views</span>
               </div>
             </div>
 
-            <div className="prose-content" dangerouslySetInnerHTML={{ __html: renderedContent }} />
+            {/* Featured Image */}
+            {post.featured_image_url && (
+              <div className="relative aspect-video rounded-2xl overflow-hidden mb-8 shadow-2xl">
+                <Image
+                  src={post.featured_image_url}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 800px"
+                />
+              </div>
+            )}
 
-            <div className="my-8">
-              <AffiliateBanner category={post.category} postId={post.id} />
-            </div>
+            {/* Article Content */}
+            <article
+              className="prose prose-slate dark:prose-invert max-w-none
+                prose-headings:font-extrabold prose-headings:text-foreground
+                prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
+                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+                prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-p:leading-relaxed prose-p:mb-5
+                prose-a:text-emerald-600 dark:prose-a:text-emerald-400 prose-a:no-underline hover:prose-a:underline
+                prose-blockquote:border-emerald-400 prose-blockquote:bg-emerald-50 dark:prose-blockquote:bg-emerald-900/10 prose-blockquote:px-6 prose-blockquote:py-1 prose-blockquote:rounded-r-xl
+                prose-code:text-emerald-600 dark:prose-code:text-emerald-400 prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                prose-pre:bg-slate-900 dark:prose-pre:bg-slate-950 prose-pre:rounded-2xl prose-pre:relative
+                prose-img:rounded-xl prose-img:shadow-lg prose-img:my-8
+                prose-li:text-slate-600 dark:prose-li:text-slate-300
+                prose-strong:text-foreground prose-strong:font-bold"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
 
-            {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 my-8">
-                {post.tags.map(tag => (
-                  <span key={tag} className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400">
+            {/* Tags */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-10 pt-8 border-t border-border">
+                {tags.map(tag => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400"
+                  >
                     #{tag}
                   </span>
                 ))}
               </div>
             )}
 
-            <div className="my-8 py-8 border-t border-b border-gray-200 dark:border-gray-800">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">How did you find this post?</h3>
+            {/* Reactions */}
+            <div className="mt-10 p-6 rounded-2xl border border-border bg-surface">
+              <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">What did you think?</h3>
               <ReactionBar postId={post.id} />
             </div>
 
-            <div className="my-8">
-              <ShareButtons title={post.title} slug={post.slug} />
+            {/* Share */}
+            <div className="mt-6 p-6 rounded-2xl border border-border bg-surface">
+              <ShareButtons title={post.title} slug={slug} />
             </div>
 
-            {(post.author_upi_id || post.author_kofi_link) && (
-              <div className="my-8">
-                <TipButton authorName={post.author_display_name} upiId={post.author_upi_id} kofiLink={post.author_kofi_link} />
-              </div>
-            )}
+            {/* Delete post (for authors with edit key) */}
+            <div className="mt-4">
+              <DeletePostButton slug={slug} />
+            </div>
 
-            <div className="my-8"><NewsletterForm /></div>
-            <div className="my-8"><CommentSection postId={post.id} /></div>
-
-            <div className="mt-8 text-center">
-              <Link href={`/edit/${post.slug}`} className="text-sm text-gray-400 hover:text-emerald-500 transition-colors">
-                ✏️ Edit this post (requires edit key)
+            {/* Edit post link */}
+            <div className="mt-2">
+              <Link
+                href={`/edit/${slug}`}
+                className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-500 transition-colors w-fit"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit this post
               </Link>
             </div>
-          </article>
 
-          <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-            <AdSenseSlot size="rectangle" />
+            {/* AdSense */}
+            <div className="mt-8">
+              <AdSenseSlot size="article" />
+            </div>
+
+            {/* Comments */}
+            <div className="mt-12 pt-8 border-t border-border">
+              <CommentSection postId={post.id} />
+            </div>
+          </main>
+
+          {/* ── Sidebar ──────────────────────────────────────────── */}
+          <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 lg:self-start">
+            {/* Table of Contents */}
+            <TableOfContents content={post.content} />
+
+            {/* Author card */}
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <div className="flex items-center gap-3 mb-3">
+                {post.author_avatar_url ? (
+                  <Image
+                    src={post.author_avatar_url}
+                    alt={post.author_display_name || 'Author'}
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover border-2 border-border"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                    {(post.author_display_name || 'A')[0].toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className="font-bold text-foreground text-sm">{post.author_display_name || 'Anonymous'}</p>
+                  <p className="text-xs text-slate-400 capitalize">{post.identity_mode || 'anonymous'} author</p>
+                </div>
+              </div>
+              {post.author_bio && (
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{post.author_bio}</p>
+              )}
+            </div>
+
+            {/* Tip button */}
+            {(post.author_upi_id || post.author_kofi_link) && (
+              <TipButton
+                authorName={post.author_display_name}
+                upiId={post.author_upi_id}
+                kofiLink={post.author_kofi_link}
+              />
+            )}
+
+            {/* Affiliate Banner */}
             <AffiliateBanner category={post.category} postId={post.id} />
-            <NewsletterForm />
+
+            {/* AdSense */}
+            <AdSenseSlot size="rectangle" />
           </aside>
         </div>
 
-        {relatedPosts.length > 0 && (
-          <section className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Related Posts</h2>
+        {/* Related Posts */}
+        {relatedPosts && relatedPosts.length > 0 && (
+          <section className="mt-16 pt-12 border-t border-border">
+            <h2 className="text-2xl font-black text-foreground mb-8">More in {cat.label}</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedPosts.map(p => <PostCard key={p.id} post={p} />)}
+              {relatedPosts.map(p => (
+                <PostCard key={p.id} post={p} />
+              ))}
             </div>
           </section>
         )}
       </div>
-    </div>
+
+      <BackToTop />
+    </>
   )
 }

@@ -126,6 +126,18 @@
       "namedRegex": "^/advertise(?:/)?$"
     },
     {
+      "page": "/api/debug",
+      "regex": "^/api/debug(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/debug(?:/)?$"
+    },
+    {
+      "page": "/api/upload",
+      "regex": "^/api/upload(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/upload(?:/)?$"
+    },
+    {
       "page": "/courses",
       "regex": "^/courses(?:/)?$",
       "routeKeys": {},

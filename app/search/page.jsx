@@ -1,151 +1,142 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
+import { useState, useEffect, useRef } from 'react'
 import { searchPostsAction } from '@/app/actions'
-import { CATEGORY_CONFIG } from '@/lib/d1'
+import PostCard from '@/components/PostCard'
 import { Search, Loader2, X } from 'lucide-react'
-
-function SearchResult({ post }) {
-  const cat = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.tech
-  const date = new Date(post.published_at).toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
-
-  return (
-    <Link href={`/post/${post.slug}`} className="group block">
-      <article className="flex gap-4 p-4 rounded-2xl border border-border bg-surface hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-lg transition-all duration-300">
-        {post.featured_image_url && (
-          <div className="relative w-24 h-20 shrink-0 rounded-xl overflow-hidden bg-background">
-            <Image
-              src={post.featured_image_url}
-              alt={post.title}
-              fill
-              className="object-cover group-hover:scale-110 transition-transform duration-500"
-              sizes="96px"
-            />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${cat.badgeClass}`}>
-              {cat.emoji} {cat.label}
-            </span>
-          </div>
-          <h3 className="font-bold text-foreground line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-            {post.title}
-          </h3>
-          {post.excerpt && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{post.excerpt}</p>
-          )}
-          <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
-            <span>{post.author_display_name || 'Anonymous'}</span>
-            <span>·</span>
-            <span>{date}</span>
-            <span>·</span>
-            <span>{post.views || 0} views</span>
-          </div>
-        </div>
-      </article>
-    </Link>
-  )
-}
+import Link from 'next/link'
+import { CATEGORY_CONFIG } from '@/lib/d1'
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const debounceRef = useRef(null)
+  const inputRef = useRef(null)
 
-  const handleSearch = useCallback((q) => {
-    if (!q || q.trim().length < 2) {
-      setResults([])
-      setSearched(false)
-      return
-    }
-    startTransition(async () => {
-      const { posts } = await searchPostsAction(q)
-      setResults(posts || [])
-      setSearched(true)
-    })
+  useEffect(() => {
+    inputRef.current?.focus()
   }, [])
 
-  const handleInput = (e) => {
-    const val = e.target.value
-    setQuery(val)
-    // Debounce: search after user stops typing for 300ms
-    clearTimeout(window._searchTimer)
-    window._searchTimer = setTimeout(() => handleSearch(val), 300)
-  }
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
 
-  const handleClear = () => {
+    if (!query.trim() || query.trim().length < 2) {
+      Promise.resolve().then(() => { setResults([]); setSearched(false); setLoading(false) })
+      return
+    }
+
+    setLoading(true)
+    debounceRef.current = setTimeout(async () => {
+      const { success, posts } = await searchPostsAction(query.trim())
+      if (success) setResults(posts || [])
+      setSearched(true)
+      setLoading(false)
+    }, 400)
+
+    return () => clearTimeout(debounceRef.current)
+  }, [query])
+
+  const clearSearch = () => {
     setQuery('')
     setResults([])
     setSearched(false)
+    inputRef.current?.focus()
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-extrabold text-foreground mb-3">Search Stories</h1>
-        <p className="text-slate-500 dark:text-slate-400">Find articles by title, topic, or keyword</p>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Header */}
+      <div className="mb-10 text-center">
+        <h1 className="text-4xl font-extrabold text-foreground mb-3">Search BlogVerse</h1>
+        <p className="text-slate-500 dark:text-slate-400">Find stories across all categories</p>
       </div>
 
-      {/* Search box */}
+      {/* Search input */}
       <div className="relative mb-8">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
         <input
-          type="search"
+          ref={inputRef}
+          type="text"
           value={query}
-          onChange={handleInput}
-          placeholder="Search articles..."
-          autoFocus
-          className="w-full pl-12 pr-12 py-4 rounded-2xl border border-border bg-surface text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg shadow-sm"
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Search for topics, titles, tags…"
+          className="w-full pl-12 pr-12 py-4 text-lg rounded-2xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-shadow shadow-sm"
           id="search-input"
         />
-        {isPending ? (
-          <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />
-        ) : query ? (
+        {query && (
           <button
-            onClick={handleClear}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            onClick={clearSearch}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Clear search"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 text-slate-400" />
           </button>
-        ) : null}
+        )}
       </div>
 
-      {/* Results */}
-      {searched && !isPending && (
-        <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            {results.length === 0
-              ? `No results for "${query}"`
-              : `${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"`}
-          </p>
-          {results.length > 0 ? (
-            <div className="space-y-3">
-              {results.map(post => <SearchResult key={post.id} post={post} />)}
-            </div>
-          ) : (
-            <div className="text-center py-16 text-slate-400">
-              <Search className="w-12 h-12 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-medium">No stories found</p>
-              <p className="text-sm mt-1">Try a different keyword or browse by category</p>
-              <Link href="/" className="inline-block mt-6 px-6 py-3 rounded-xl bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors">
-                Browse All Stories
-              </Link>
-            </div>
-          )}
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
         </div>
       )}
 
-      {!searched && !isPending && (
-        <div className="text-center py-16 text-slate-400">
-          <Search className="w-12 h-12 mx-auto mb-4 opacity-20" />
-          <p>Start typing to search across all stories</p>
+      {/* Results */}
+      {!loading && searched && (
+        <>
+          <p className="text-sm text-slate-400 mb-6">
+            {results.length === 0
+              ? `No results for "${query}"`
+              : `${results.length} result${results.length === 1 ? '' : 's'} for "${query}"`}
+          </p>
+
+          {results.length > 0 ? (
+            <div className="grid sm:grid-cols-2 gap-6">
+              {results.map(post => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🔍</div>
+              <h2 className="text-xl font-bold text-foreground mb-2">No stories found</h2>
+              <p className="text-slate-500 mb-8">Try a different search term or explore by category</p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {Object.entries(CATEGORY_CONFIG).map(([key, cat]) => (
+                  <Link
+                    key={key}
+                    href={`/category/${key}`}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all hover:-translate-y-0.5 ${cat.borderClass}`}
+                  >
+                    {cat.emoji} {cat.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Empty state — before search */}
+      {!loading && !searched && !query && (
+        <div className="mt-8">
+          <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-5">Browse by Category</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(CATEGORY_CONFIG).map(([key, cat]) => (
+              <Link
+                key={key}
+                href={`/category/${key}`}
+                className={`flex items-center gap-4 p-5 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-lg ${cat.bgClass} ${cat.borderClass}`}
+              >
+                <span className="text-3xl">{cat.emoji}</span>
+                <div>
+                  <p className="font-bold text-foreground text-sm">{cat.label}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
